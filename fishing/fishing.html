@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google Font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pirata+One&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Satisfy&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Skull Icon-->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js"
+      integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <title>Ahoy Mateys</title>
+    <link rel="stylesheet" href="styles.css" />
+    <title>Ahoy Mateys</title>
+  </head>
+  <body>
+    <header>
+      <h1 id="siteName">
+        <i class="fa-solid fa-skull-crossbones"></i>
+        Ahoy Mateys
+        <i class="fa-solid fa-skull-crossbones"></i>
+      </h1>
+    </header>
+    <div id="game-container">
+      <div id="info-wrapper">
+        <div id="instructions"></div>
+        <button id="start-btn"><span class="arrow"></span></button>
+      </div>
+      <div id="game-stats">
+        <div id="clock">
+          <svg
+            viewBox="0 0 120 120"
+            class="chart-gauge"
+            fill="none"
+            stroke-width="4"
+          >
+            <circle class="timer-backdrop" r="40" cx="60" cy="60"></circle>
+            <circle class="timer-gauge" r="40" cx="60" cy="60"></circle>
+            <text y="50%" x="50%" id="game-timer" class="timer-time">15s</text>
+          </svg>
+        </div>
+        <span id="game-score"></span>
+      </div>
+    </div>
+    <div id="click-container">
+      <span id="line"></span>
+      <div id="bubbles"></div>
+    </div>
+    <script type="text/javascript" src="fishing.js"></script>
+  </body>
+</html>
