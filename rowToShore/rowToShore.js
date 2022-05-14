@@ -79,35 +79,35 @@ function moveStone0() {
 }
 
 function moveStone1() {
-    stone0.style.left = (parseInt(stone1.style.left) - 100) + "px";
+    stone1.style.left = (parseInt(stone1.style.left) - 100) + "px";
 }
 
 function moveStone2() {
-    stone0.style.left = (parseInt(stone2.style.left) - 100) + "px";
+    stone2.style.left = (parseInt(stone2.style.left) - 100) + "px";
 }
 
 function moveStone3() {
-    stone0.style.left = (parseInt(stone3.style.left) - 100) + "px";
+    stone3.style.left = (parseInt(stone3.style.left) - 100) + "px";
 }
 
 function moveStone4() {
-    stone0.style.left = (parseInt(stone4.style.left) - 100) + "px";
+    stone4.style.left = (parseInt(stone4.style.left) - 100) + "px";
 }
 
 function moveStone5() {
-    stone0.style.left = (parseInt(stone5.style.left) - 100) + "px";
+    stone5.style.left = (parseInt(stone5.style.left) - 100) + "px";
 }
 
 function moveStone6() {
-    stone0.style.left = (parseInt(stone6.style.left) - 100) + "px";
+    stone6.style.left = (parseInt(stone6.style.left) - 100) + "px";
 }
 
 function moveStone7() {
-    stone0.style.left = (parseInt(stone7.style.left) - 100) + "px";
+    stone7.style.left = (parseInt(stone7.style.left) - 100) + "px";
 }
 
 function moveStone8() {
-    stone0.style.left = (parseInt(stone8.style.left) - 100) + "px";
+    stone8.style.left = (parseInt(stone8.style.left) - 100) + "px";
 }
 
 function moveStone() {
