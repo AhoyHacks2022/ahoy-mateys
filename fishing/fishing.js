@@ -69,7 +69,6 @@ window.onload = function () {
     clickContainer.style.display = "block";
     gameStats.style.display = "flex";
     createItems();
-    endGame();
   }
 
   //create items function
