@@ -24,10 +24,10 @@ var preload;
 
 
 var player = {
-    x: 100,
-    y: 100,
-    width: 50,
-    height: 50
+    x: 0,
+    y: 0,
+    width: 30,
+    height: 30
 }; // The player character
 var playerSprite
 
@@ -42,6 +42,11 @@ var loadingInterval = 0;
 // ----------------------------------------------
 
 
+var canvasSize = {
+	height: "80%",
+	width: "80%",
+}
+
 let viewportHeight = window.innerHeight;
 let viewportWidth = window.innerWidth;
 
@@ -53,6 +58,10 @@ console.log(viewportWidth)
 //register key functions
 document.onkeydown = handleKeyDown;
 document.onkeyup = handleKeyUp;
+window.addEventListener('resize', reportWindowSize);
+document.documentElement.style.setProperty('--scrollbar-width', (window.innerWidth - document.documentElement.clientWidth) + "px");
+
+// ----------------------------------------------
 
 // Runs once the body element has loaded
 function init() {
@@ -73,6 +82,10 @@ function init() {
 
 
     canvas = document.getElementById("mapCanvas");
+	canvas.height = viewportHeight
+	canvas.width = viewportWidth
+	// canvas.style.height = canvasSize.height
+	// canvas.style.width = canvasSize.width
 	stage = new createjs.Stage(canvas);
 
 	messageField = new createjs.Text("Loading", "bold 24px Arial", "#FFFFFF");
@@ -153,19 +166,33 @@ function handleTick(event) {
     
     if (lfHeld) {
         playerSprite.x = playerSprite.x - 5
+		if (playerSprite.x < player.width ) {
+			playerSprite.x = player.width
+		}
     }
 
     if (rtHeld) {
         playerSprite.x = playerSprite.x + 5
+		if (playerSprite.x > viewportWidth - player.width ) {
+			playerSprite.x = viewportWidth - player.width 
+		}
     }
 
     if (fwdHeld) {
         playerSprite.y = playerSprite.y - 5
+		if (playerSprite.y < player.height ) {
+			playerSprite.y = player.height 
+		}
     }
 
     if (dnHeld) {
         playerSprite.y = playerSprite.y + 5
+		if (playerSprite.y > viewportHeight - player.height ) {
+			playerSprite.y = viewportHeight - player.height 
+		}
     }
+
+	console.log(playerSprite.y)
 
 	stage.update();
 }
@@ -273,4 +300,11 @@ function handleKeyUp(e) {
 	}
 
     console.log(e.keyCode)
+}
+
+
+
+function reportWindowSize() {
+	console.log(window.innerHeight)
+	console.log(window.innerWidth)
 }
