@@ -5,6 +5,21 @@ h1#siteName {
   height: 50px;
 }
 
+#btnNext {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: solid 1px#ffffff;
+  border-radius: 20px;
+  font-family: "Pirata One", cursive;
+  justify-content: center;
+  text-align: center;
+  font-size: 50px;
+  height: 60px;
+  width: 200px;
+  position: absolute;
+  bottom: 5%;
+  right: 5%
+}
+
 #info-wrapper {
   background-color: rgba(0, 0, 0, 0.25);
   padding: 20px;
@@ -12,7 +27,7 @@ h1#siteName {
   border: 4px solid white;
   position: relative;
   width: 400px;
-  height: 400px;
+  min-height: 400px;
 }
 
 div#instructions {

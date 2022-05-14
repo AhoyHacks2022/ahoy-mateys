@@ -1,4 +1,5 @@
 window.onload = function () {
+  const gameContainer = document.querySelector("#game-container");
   const clickContainer = document.querySelector("#click-container");
   const fishingLine = document.querySelector("#line");
   const infoWrapper = document.querySelector("#info-wrapper");
@@ -23,6 +24,8 @@ window.onload = function () {
   var bgm; //set bgm
   var bloop; //fish sound
   var bottleSound; // bottle sound
+  var bottlePop; // pop sound when the bottle is opened
+  var crinkle; // sound of the map
 
   //event listeners
   startBtn.addEventListener("click", startGame);
@@ -59,11 +62,14 @@ window.onload = function () {
     bloop = new sound("sounds/fish.mp3");
     bottleSound = new sound("sounds/glass.mp3");
     bgm = new sound("sounds/waves.mp3");
+    bottlePop = new sound("sounds/pop.mp3");
+    crinkle = new sound("sounds/map.mp3");
     bgm.play();
     infoWrapper.style.display = "none";
     clickContainer.style.display = "block";
     gameStats.style.display = "flex";
     createItems();
+    endGame();
   }
 
   //create items function
@@ -235,12 +241,45 @@ window.onload = function () {
     let remainingItems = document.querySelectorAll(".item");
     for (var i = 0; i < remainingItems.length; i++) {
       clickContainer.removeChild(remainingItems[i]);
-    }
+    } 
     gameStats.style.display = "none";
     clickContainer.style.display = "none";
-    startBtn.style.top = "66%";
-    instructions.innerHTML = `<h2>You got a bottle</h2><a href="/">treasure!</a>`;
+    infoWrapper.removeChild(startBtn);
+    if (fishTracker[1] > 0) {
+      showBottleAnimation();
+    } else {
+      showFishMouth();
+    }
+
     infoWrapper.style.display = "block";
+  }
+
+  function showMap() {
+    gameContainer.innerHTML = `<img id="map" src="images/map.svg"><div id="btnNext">Next</div>`;
+    document.getElementById("map").addEventListener("click", () => {
+      crinkle.play();
+    });
+    document.getElementById("btnNext").addEventListener("click", () => {
+      window.location.replace('../index.html') // TODO: needs to be replaced with amelia's file path
+    });
+  }
+
+  // click on the bottle to pop it open and display a map
+  function showBottleAnimation() {
+    instructions.innerHTML = `<div><h2>You got a bottle with a map inside! Scroll to open! </h2><img id="map-bottle" src="images/bottle.svg"></div>`;
+    document.getElementById("map-bottle").addEventListener("wheel", () => {
+      bottlePop.play();
+      showMap();
+    });
+  }
+
+  // pull the map out of the fish's mouth
+  function showFishMouth() {
+    instructions.innerHTML = `<div><h2>This fish looks a bit weird... Pull the map out of its mouth! </h2><img id="map-fish" src="images/fishmap.svg"></div>`;
+    document.getElementById("map-fish").addEventListener("drag", () => {
+      bottlePop.play();
+      showMap();
+    });
   }
 
   //Make bubbles
