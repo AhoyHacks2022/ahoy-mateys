@@ -10,15 +10,21 @@ canvas {
 }
 
 body {
-  background-color: #84dcf2;
+  background-color: #711085;
   padding: 0px;
 }
 
 #mapCanvas {
   /* border: 1px solid #000000; */
+  background-color: #84e1f2;
+
   margin: 0px;
   width: calc(100vw - ((100vw - 100%)));
-  height: calc(100vh - ((100vw - 100%) * 2));
+  height: calc(100vh - ((100vw - 100%)));
+}
+
+#canvasSection {
+    margin: 0px;
 }
 
 
