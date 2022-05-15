@@ -12,8 +12,12 @@ Ahoy mateys! Welcome aboard our epic pirte adveture!
     * Canva
 
 ## Audio
-* The Awakening
+* The Awakening (Map Nav intro music)
     * Youtube audio library
+* life as a pirate proud (Map Nav win music)
+    * https://www.proudmusiclibrary.com/en/tag/pirate
+* drunken pirates proud (Map Nav lose music)
+    * https://www.proudmusiclibrary.com/en/tag/pirate
 
 ## Code segment and inspiration
 * Basic controls 

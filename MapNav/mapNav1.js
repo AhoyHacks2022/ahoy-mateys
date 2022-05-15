@@ -103,7 +103,6 @@ var playerSpeed = {
 }
 
 // Bitmaps
-// var waves = []
 // var currents = []
 var islands = []
 var ghostShips = []
@@ -125,6 +124,10 @@ var loadingInterval = 0;
 var overlayBitmap
 
 var gameState = "idle"
+
+
+// Waves
+var waves = {}
 
 
 // ----------------------------------------------
@@ -200,9 +203,13 @@ function init() {
 		{id: "island3", src: "images/island3.png"},
 		{id: "current1", src: "images/current1.png"},
 		{id: "current2", src: "images/current2.png"},
-		{id: "pirateBattleIntro", src: "images/pirateBattleIntro.png"},
+		{id: "introCard", src: "images/pirateshipBattleIntro.png"},
+		{id: "loseCard", src: "images/pirateshipBattleLost.png"},
+		{id: "winCard", src: "images/pirateshipBattleWin.png"},
 		
 		{id: "battleMusic", src: "sounds/battleMusic.mp3"},
+		{id: "winMusic", src: "sounds/winMusic.mp3"},
+		{id: "loseMusic", src: "sounds/loseMusic.mp3"},
 	];
 
 	createjs.Sound.alternateExtensions = ["mp3"];
@@ -218,6 +225,82 @@ function init() {
     createjs.Ticker.addEventListener("tick", handleTick);
 }
 
+function resetGameVar() {
+		// The player character
+		player = {
+			width: 40,
+			height: 40,
+			rotation: 90,
+			health: 200,
+			invincibilityTimer: 0,
+			// ammo: 100,
+			bitmap: null,
+		}; 
+		
+			islandInfo = {
+			generationOdds: 0.2,
+			islandFill: 0.3,
+			distBtwn: 100,
+			xTiles: 5,
+			yTiles: 5,
+			islandWidth: 60,
+			islandLocations: [],
+			islandCenters: [],
+			border: 100,
+			numIslands: 0,
+		}
+		
+		ghostShipInfo = {
+			ghostShipOdds: 1,
+			numGhostShips: 0,
+			ghostLocations: [],
+			ghostCenters: [],
+			ghostHealth: [],
+			cooldownTimers: [],
+			rotationRates: [],
+			rotationRate: 1.5,
+			distCenter: 100,
+			centerOffset: 20,
+		}
+		
+		cannonBall = {
+			rotationSpeed: 5,
+			speed: 10,
+			width: 10,
+			activePlayer: [],
+			activeEnemy: [],
+			numPlayer: 0,
+			numEnemy: 0,
+		}
+		
+		playerSpeed = {
+			euclidean: 0,
+			x: 0,
+			y: 0,
+		
+			rotationSpeed: 2,
+			acceleration: 0.05,
+			decceleration: 0.005,
+			maxSpeed: 4,
+		}
+		
+		// Bitmaps
+		waves = []
+		currents = []
+		islands = []
+		ghostShips = []
+	
+	
+		// timers
+		shipCollisionDamageTicker = 0
+		shootCooldownTimerPlayerL = 0
+		shootCooldownTimerPlayerR = 0
+	
+		loadingInterval = 0;
+	
+		gameState = "idle"
+}
+
 
 // restart the game if the player looses
 function restart() {
@@ -225,7 +308,7 @@ function restart() {
     stage.removeAllChildren();
 
     // reset game variables
-	// TODO
+	resetGameVar()
 	
 	// generate island locations
 	generateIslands()
@@ -482,7 +565,6 @@ function keepPlayerInBounds() {
 	}
 }
 
-// TODO: code player health decrease 
 function playerDamaged() {
 
 	// check invincibiliity timer
@@ -503,9 +585,21 @@ function playerDamaged() {
 	}
 }
 
-// TODO: game over condition
 function gameover() {
-	alert("game over")
+	createjs.Sound.play("loseMusic", {interrupt: createjs.Sound.INTERRUPT_ANY});
+
+	stage.removeAllChildren()
+	stage.clear()
+
+	var image = preload.getResult("loseCard")
+	overlayBitmap = new createjs.Bitmap(image);
+	overlayBitmap.scaleX = 0.5 
+	overlayBitmap.scaleY = 0.5
+	overlayBitmap.x = (viewportWidth / 2) - (overlayBitmap.getTransformedBounds().width / 2)
+	overlayBitmap.y = (viewportHeight / 2) - (overlayBitmap.getTransformedBounds().height / 2)
+	stage.addChild(overlayBitmap)
+
+	watchRestart()
 }
 
 
@@ -530,28 +624,33 @@ function keepPlayerOffIslands() {
 }
 
 function playerEnemyCollisionCheck() {
-	for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
-		let calc = calc2points(ghostShips[i].x, ghostShips[i].y,
-			player.bitmap.x, player.bitmap.y
-			)
-
-		if (calc.distance < GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS) {
-			
-			// move the ship away from the island on the tangent
-			player.bitmap.x = ghostShips[i].x + calcXfromEuclidean(calc.angle, GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
-			player.bitmap.y = ghostShips[i].y - calcYfromEuclidean(calc.angle, GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
-
-			playerSpeed.x = 0
-			playerSpeed.y = 0
-
-			playerDamaged()
-
+	for (let i = 0; i < 3; i++) {
+		if (ghostShipInfo.ghostHealth[i] > 0) {
+			let calc = calc2points(ghostShips[i].x, ghostShips[i].y,
+				player.bitmap.x, player.bitmap.y
+				)
+	
+			if (calc.distance < GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS) {
+				
+				// move the ship away from the island on the tangent
+				player.bitmap.x = ghostShips[i].x + calcXfromEuclidean(calc.angle, GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
+				player.bitmap.y = ghostShips[i].y - calcYfromEuclidean(calc.angle, GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
+	
+				playerSpeed.x = 0
+				playerSpeed.y = 0
+	
+				playerDamaged()
+	
+			}
 		}
+
 	}
 }
 
 
 function fireCannonPort(shooter, x=0, y=0, rotation=0) {
+	// TODO: add cannon sounds to port and starboard
+	// createjs.Sound.play("laser", {interrupt: createjs.Sound.INTERUPT_LATE});
 
 	// create cannon ball bitmap
 	image = preload.getResult("cannonBall")	
@@ -643,30 +742,47 @@ function fireCannonStarboard(shooter, x=0, y=0, rotation=0) {
 	}
 }
 
-
-// TODO: define enemy damaged function
 function enemyDamanged(j) {
-	// reduce enemy health points
-	ghostShipInfo.ghostHealth[j] -=  10
-	console.log(j, ghostShipInfo.ghostHealth[j])
+	if (ghostShipInfo.ghostHealth[j] > 0) {
+		// reduce enemy health points
+		ghostShipInfo.ghostHealth[j] -=  10
+		console.log("hit")
+		console.log(j, ghostShipInfo.ghostHealth[j])
 
-	if (ghostShipInfo.ghostHealth[j] <= 0) {
-		// despawn the enemy
-		stage.removeChild(ghostShips[j])
-		
-		// reduce enemy count
-		ghostShipInfo.numGhostShips -= 1
+		if (ghostShipInfo.ghostHealth[j] <= 0) {
+			// despawn the enemy
+			stage.removeChild(ghostShips[j])
+			
+			// reduce enemy count
+			ghostShipInfo.numGhostShips -= 1
 
-		// check if win (no enemy left)
-		if (ghostShipInfo.numGhostShips == 0) {
-			gameWon()
+			// check if win (no enemy left)
+			if (ghostShipInfo.numGhostShips == 0) {
+				gameWon()
+			}
 		}
 	}
+
 }
 
-// TODO: cod ethe game won screen and proceed to next screen
+
 function gameWon() {
-	alert("game won")
+	createjs.Sound.stop();
+	createjs.Sound.play("winMusic", {interrupt: createjs.Sound.INTERRUPT_NONE, loop: -1, volume: 0.4});
+	
+
+	stage.removeAllChildren()
+	stage.clear()
+
+	var image = preload.getResult("winCard")
+	overlayBitmap = new createjs.Bitmap(image);
+	overlayBitmap.scaleX = 0.5 
+	overlayBitmap.scaleY = 0.5
+	overlayBitmap.x = (viewportWidth / 2) - (overlayBitmap.getTransformedBounds().width / 2)
+	overlayBitmap.y = (viewportHeight / 2) - (overlayBitmap.getTransformedBounds().height / 2)
+	stage.addChild(overlayBitmap)
+
+	watchClickWin()
 }
 
 function cannonBallUpdates() {
@@ -708,19 +824,22 @@ function cannonBallUpdates() {
 		
 		if (!collisionDetected) {
 			//  check if collision with enemy
-			for (let j = 0; j < ghostShipInfo.numGhostShips; j++) {
-				let calc = calc2points(ghostShips[j].x, ghostShips[j].y, 
-					cX + cannonBall.width / 2, 
-					cY + cannonBall.width / 2)
-
-				if (calc.distance < GHOSTDAMAGERADIUS) {
-					console.log("landed a hit!")
-					// destroy cannonball
-					cannonballsToDestroy.push(i)
-
-					enemyDamanged(j);
+			for (let j = 0; j < 3; j++) {
+				if (ghostShipInfo.ghostHealth[j] > 0) {
+					let calc = calc2points(ghostShips[j].x, ghostShips[j].y, 
+						cX + cannonBall.width / 2, 
+						cY + cannonBall.width / 2)
+	
+					if (calc.distance < GHOSTDAMAGERADIUS) {
+						console.log("landed a hit!")
+						// destroy cannonball
+						cannonballsToDestroy.push(i)
+	
+						enemyDamanged(j);
+					}
 				}
 			}
+				
 		}
 	}
 
@@ -869,7 +988,7 @@ function handleTick(event) {
 			player.invincibilityTimer -= 2
 		}
 
-		for (let k = 0; k < ghostShipInfo.numGhostShips; k++) {
+		for (let k = 0; k < 3; k++) {
 			if (ghostShipInfo.ghostHealth[k] > 0) {
 				ghostShipInfo.cooldownTimers[k] -= 2
 				
@@ -907,7 +1026,7 @@ function handleTick(event) {
 		keepPlayerOffIslands()
 
 		// update enemy position
-		for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
+		for (let i = 0; i < 3; i++) {
 			ghostShips[i].rotation -= ghostShipInfo.rotationRates[i]
 
 			while (ghostShips[i].rotation < 0) {
@@ -947,7 +1066,7 @@ function doneLoading(event) {
 
 	stage.removeChild(messageField);
 
-	var image = preload.getResult("pirateBattleIntro")
+	var image = preload.getResult("introCard")
 	overlayBitmap = new createjs.Bitmap(image);
 	overlayBitmap.scaleX = 0.5 
 	overlayBitmap.scaleY = 0.5
@@ -956,8 +1075,7 @@ function doneLoading(event) {
 	stage.addChild(overlayBitmap)
 
 	// start the music
-	// TODO: uncomment line below
-	// createjs.Sound.play("battleMusic", {interrupt: createjs.Sound.INTERRUPT_NONE, loop: -1, volume: 0.4});
+	createjs.Sound.play("battleMusic", {interrupt: createjs.Sound.INTERRUPT_NONE, loop: -1, volume: 0.4});
 
 	watchRestart();
 }
@@ -976,12 +1094,20 @@ function handleClick() {
 	canvas.onclick = null;
 
 	// indicate the player is now on screen
-	// TODO: uncomment below
-	// createjs.Sound.play("battleMusic");
+	createjs.Sound.play("battleMusic");
 
 	restart();
 }
 
+function watchClickWin() {
+
+	canvas.onclick = handleClickEnd;
+}
+
+function handleClickEnd() {
+	window.location.href = "../index.html";
+
+}
 // ------------------------------------------------------
 // HANDLE KEYPRESSES
 
