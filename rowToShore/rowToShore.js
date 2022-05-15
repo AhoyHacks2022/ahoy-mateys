@@ -30,6 +30,10 @@ var runStone6 = 0;
 var runStone7 = 0;
 var runStone8 = 0;
 
+function next() {
+    window.location.href = "../Treasure/hunt.html";
+}
+
 function buttonPressed() {
     // Check which stone to run
     if (runStone0 == 1) {

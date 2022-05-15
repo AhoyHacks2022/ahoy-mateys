@@ -1,0 +1,71 @@
+#siteName {
+  font-family: "Pirata One", cursive;
+  text-align: center;
+  font-size: 50px;
+}
+
+body {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+}
+
+#ship {
+  min-height: 700px;
+  max-height: 900px;
+  object-fit: contain;
+}
+
+#pirate {
+  position: absolute;
+  background-size: cover;
+  height: 65%;
+  bottom: 2%;
+}
+
+#speechbubble, #thoughtbubble {
+  position: absolute;
+  z-index: 5;
+  margin-left: 350px;
+  margin-bottom: -8%;
+  height: 35%;
+  bottom: 62%;
+  visibility: hidden;
+}
+
+#hungryPirate {
+  position: absolute;
+  background-size: cover;
+  height: 65%;
+  bottom: 2%;
+  visibility: hidden;
+  z-index: 10;
+}
+
+#text {
+    font-size: 25px;
+    visibility: hidden;
+    position: absolute;
+    bottom: 150px;
+    left: 550px;
+    z-index: 100;
+    
+}
+
+#btnNext {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: solid 1px#ffffff;
+  border-radius: 20px;
+  font-family: "Pirata One", cursive;
+  justify-content: center;
+  text-align: center;
+  font-size: 50px;
+  height: 60px;
+  width: 200px;
+  position: absolute;
+  bottom: 5%;
+  right: 5%;
+}
