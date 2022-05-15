@@ -1,6 +1,9 @@
 /* 
  * Rowing to shore (in the smaller boat)
  * Avoiding rocks and other obstacles
+ * 
+ * 1 point added for each successful move
+ * 1 live deducted for collision with stone
  */
 
 var score = 0;
