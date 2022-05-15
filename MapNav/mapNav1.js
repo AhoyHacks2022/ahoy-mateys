@@ -12,6 +12,8 @@ var KEYCODE_S = 83;			//useful keycode
 
 var VIEWPORTSCALE = 2
 var OBJECTSCALE = VIEWPORTSCALE * 2
+
+var SQRIMGHEIGHT = 1080
 // ----------------------------------------------
 
 // Define variables
@@ -32,14 +34,6 @@ var player = {
 	bitmap: null,
 }; // The player character
 
-var enemy = {
-    x: 100,
-    y: 100,
-    width: 50,
-    height: 50,
-	bitmap: null,
-}; // The enemy character
-
 var waves = []
 var currents = []
 var balls = []
@@ -59,9 +53,12 @@ var islandInfo = {
 }
 
 var ghostShipInfo = {
-	ghostShipOdds: 0.5,
+	ghostShipOdds: 1,
 	numGhostShips: 0,
 	ghostLocations: [],
+	ghostCenters: [],
+	rotationRate: 1.5,
+	distCenter: 100,
 }
 
 var messageField;		//Message display field
@@ -86,6 +83,9 @@ var cannonBallRotation = 5;
 var loadingInterval = 0;
 
 var overlayBitmap
+
+var gameState = "idle"
+
 
 // ----------------------------------------------
 
@@ -195,8 +195,6 @@ function restart() {
     //ensure stage is blank
 	stage.clear();
 
-	// add the game play elements
-
 	// // healthField text
 	// healthField = new createjs.Text("0", "bold 18px Arial", "#FFFFFF");
 	// healthField.textAlign = "right";
@@ -205,10 +203,25 @@ function restart() {
 	// healthField.maxWidth = 1000;
 	
 	// player ship
+	let	image = preload.getResult("playerShip")							
 	
+	let bitmap = new createjs.Bitmap(image)
+	bitmap.scaleX = player.width / viewportHeight 
+	bitmap.scaleY = player.width / viewportHeight 
+
+	bitmap.x = Math.floor(islandInfo.border/3) 
+	bitmap.y = Math.floor(islandInfo.border/3) 
+	
+	bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
+
+	bitmap.rotation = 180
+	
+	player.bitmap = bitmap
+	stage.addChild(player.bitmap)
 	// bitmap.scaleX = 50 / viewportHeight 
 	// bitmap.scaleY = 50 / viewportHeight 
 
+	gameState = "playing"
 
     //start game timer
 	if (!createjs.Ticker.hasEventListener("tick")) {
@@ -227,8 +240,6 @@ function generateIslands() {
 
 	islandInfo.xTiles = Math.floor(distX / islandInfo.distBtwn)
 	islandInfo.yTiles = Math.floor(distY / islandInfo.distBtwn)
-
-	console.log(islandInfo)
 
 	islandInfo.numIslands = 0
 
@@ -279,8 +290,22 @@ function generateIslands() {
 	
 	ghostArray = new Array(islandInfo.yTiles).fill().map(() => Array(islandInfo.xTiles).fill(0));
 
+	while (ghostShipInfo.numGhostShips < 3) {
+		console.log("here")
+		let i = Math.floor(Math.random() * (islandInfo.xTiles))
+		let j = Math.floor(Math.random() * (islandInfo.yTiles))
+
+		if (islandArray[j][i] > 0 && ghostArray[j][i] == 0 && Math.random() < ghostShipInfo.ghostShipOdds) {
+			// generate ghost ship
+			ghostShipInfo.numGhostShips++;
+			ghostArray[j][i] = 1;
+		}
+
+	}
+	console.log(ghostArray)
 	let countedIslands = 0
-	let countedGhosts = 0
+	var countedGhosts = 0
+
 
 	for (let i = 0; i < islandInfo.xTiles; i++) {
 		for (let j = 0; j < islandInfo.yTiles; j++) {
@@ -311,27 +336,29 @@ function generateIslands() {
 				stage.addChild(islands[countedIslands])
 				countedIslands++
 
-				if (Math.random() < ghostShipInfo.ghostShipOdds) {
-					// generate ghost ship
-					ghostShipInfo.numGhostShips++;
-					ghostArray[j][i] = 1;
-
-					
-
+				
+				if (ghostArray[j][i] == 1) {
+					console.log("boo")
 					// render ghost ships
-					image = preload.getResult("enemyShip")							
+					image = preload.getResult("enemyShip")						
 
 					bitmap = new createjs.Bitmap(image)
-					bitmap.scaleX = player.width / viewportHeight 
-					bitmap.scaleY = player.width / viewportHeight 
 
-					bitmap.x = islandInfo.border + i * islandInfo.distBtwn + (islandInfo.distBtwn - islandInfo.islandWidth) * 2
-					bitmap.y = islandInfo.border + j * islandInfo.distBtwn
+					bitmap.x = islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2 + 10
+					bitmap.y = islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2 + 10 
 					
+					bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
+
+					bitmap.scale = player.width / viewportHeight 
 					
 					ghostShips.push(bitmap)
 					stage.addChild(ghostShips[countedGhosts])
 					countedGhosts++
+
+					ghostShipInfo.ghostCenters.push({
+						x: islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2,
+						y: islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2,
+					})
 					
 				}
 
@@ -339,47 +366,54 @@ function generateIslands() {
 		}
 	}
 
+	console.log(ghostShipInfo.ghostCenters)
+
 	islandInfo.islandLocations = islandArray
 	ghostShipInfo.ghostLocations = ghostArray
-
-
-	// iterate through bounds
 }
 
 function handleTick(event) {
-    // console.log(playerSprite)
+    // console.log(player.bitmap)
     
 	// process player inputs
     if (lfHeld) {
-        playerSprite.x = playerSprite.x - 5
-		if (playerSprite.x < player.width ) {
-			playerSprite.x = player.width
+        player.bitmap.x = player.bitmap.x - 5
+		if (player.bitmap.x < player.width ) {
+			player.bitmap.x = player.width
 		}
     }
 
     if (rtHeld) {
-        playerSprite.x = playerSprite.x + 5
-		if (playerSprite.x > viewportWidth - player.width ) {
-			playerSprite.x = viewportWidth - player.width 
+        player.bitmap.x = player.bitmap.x + 5
+		if (player.bitmap.x > viewportWidth - player.width ) {
+			player.bitmap.x = viewportWidth - player.width 
 		}
     }
 
     if (fwdHeld) {
-        playerSprite.y = playerSprite.y - 5
-		if (playerSprite.y < player.height ) {
-			playerSprite.y = player.height 
+        player.bitmap.y = player.bitmap.y - 5
+		if (player.bitmap.y < player.height ) {
+			player.bitmap.y = player.height 
 		}
     }
 
     if (dnHeld) {
-        playerSprite.y = playerSprite.y + 5
-		if (playerSprite.y > viewportHeight - player.height ) {
-			playerSprite.y = viewportHeight - player.height 
+        player.bitmap.y = player.bitmap.y + 5
+		if (player.bitmap.y > viewportHeight - player.height ) {
+			player.bitmap.y = viewportHeight - player.height 
 		}
     }
 
 	// update enemy position
+	for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
+		ghostShips[i].rotation -= ghostShipInfo.rotationRate
+		let px = ghostShipInfo.ghostCenters[i].x + ghostShipInfo.distCenter  * Math.cos(ghostShips[i].rotation / 180 * Math.PI)
+		let py = ghostShipInfo.ghostCenters[i].y + ghostShipInfo.distCenter * Math.sin(ghostShips[i].rotation / 180 * Math.PI)
 
+		console.log(px)
+		ghostShips[i].x = px
+		ghostShips[i].y = py
+	}
 
 	// update cannonball rotation and posititions
 
