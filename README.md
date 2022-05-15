@@ -1,5 +1,5 @@
 # ahoy-mateys
-Ahoy mateys! Welcome aboard our epic pirte adveture!
+Ahoy mateys! Welcome aboard our epic pirate adveture!
 
 
 # Credits
@@ -12,6 +12,12 @@ Ahoy mateys! Welcome aboard our epic pirte adveture!
     * Canva
 * cannonball
     * Canva
+* pirateLeft
+    * Figma
+* pirate 
+    * https://pixabay.com/vectors/pirate-corsair-captain-pirates-4018168/
+* treasure map
+    * https://freesvg.org/1526022434
 
 ## Audio
 * The Awakening (Map Nav intro music)
@@ -20,7 +26,11 @@ Ahoy mateys! Welcome aboard our epic pirte adveture!
     * https://www.proudmusiclibrary.com/en/tag/pirate
 * drunken pirates proud (Map Nav lose music)
     * https://www.proudmusiclibrary.com/en/tag/pirate
+* Many sounds taken from 
+    * https://soundscrate.com/
 
 ## Code segment and inspiration
 * Basic controls 
     * [Create JS documentation](https://createjs.com/demos/easeljs/game)
+* Waves on the entry page
+    * https://codepen.io/tedmcdo/pen/PqxKXg
