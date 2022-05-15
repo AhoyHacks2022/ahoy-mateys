@@ -1,0 +1,97 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>
+            Treasure hunt
+        </title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+        <script src="base.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="hunt.css">
+    </head>
+    <body>
+            <div id="shovel"></div>
+
+            <canvas id="main canvas" onclick="myFunction(event)" style="border:1px solid #874DA1;">
+            </canvas>
+            <script>
+                let sum = 16;
+                function myFunction(event){
+                    var shovel = document.getElementById('shovel');
+
+                    //position of shovel:
+                    shovel.style.position = "absolute";
+                    var shovelPosition = shovel.getBoundingClientRect();
+                    
+                    if (event.pageX > 0.5 * document.documentElement.clientWidth && event.pageX < 0.8 * document.documentElement.clientWidth
+                    && event.pageY > 0.55 * document.documentElement.clientHeight && event.pageY < 0.8 * document.documentElement.clientHeight) {
+
+                        shovel.style.left = (event.pageX - 790) + "px"
+                        shovel.style.top = (event.pageY - 550) + "px"
+
+                        var scrollMath = document.getElementById('scroll');
+                        scrollMath.style.visibility = "visible";
+
+                        var scroll = document.getElementById('scroll content');
+                        const num1 = Math.floor(Math.random() * 10);
+                        const num2 = Math.floor(Math.random() * 10);
+                        sum = num1+num2;                       
+                        scroll.innerHTML = num1 + " + " + num2 + " = ";
+                        
+                        inputBox = document.createElement('input');
+                        inputBox.id = "ans"
+                        inputBox.style.width = "40px";
+                        inputBox.style.height = "40px";
+                        scroll.appendChild(inputBox);
+
+                        okbutton = document.createElement('button')
+                        okbutton.className = "btn btn-primary"
+                        okbutton.id = "submitButton"
+                        okbutton.onclick = function (){
+                            userAns = document.getElementById("ans").value;
+                            if (userAns == sum){
+                                alert("correct! you have unlocked the treasure box!")
+                                var box = document.getElementById('treasure');
+                                box.style.visibility = "visible";
+                            }
+                            else {
+                                alert("wrong answer. try digging another area or continue guessing.")
+                            }
+                        };
+                        okbutton.innerHTML ="Ok";
+                        scroll.appendChild(okbutton)
+                        
+                    }
+                    else {
+                        alert("outside digging area. please select a spot on the empty sand instead")
+                    }
+                }
+                function checkSum(){
+                    userAns = document.getElementById("ans").value;
+                    if (userAns == sum){
+                        alert("correct! you have unlocked the treasure box!")
+                        var box = document.getElementById('treasure');
+                        box.style.visibility = "visible";
+                    }
+                    else {
+                        alert("wrong answer. try digging another area or continue guessing.")
+                    }
+                }
+            </script>
+            <!--<span id="scroll" name="tipDiv1" style="width: 300px; height:300px;border-color: rgb(0, 102, 204); border-width: 1px; padding: 8px; border-style: ridge; display: block; position: absolute; visibility: hidden; background-color: rgb(217, 232, 247,40); left: 30vw; top: 20vh;">
+                
+            </span>-->
+            <span class="container" id="scroll" style="visibility:hidden;left:50vw; top: 15vh; width:400px; height:300px">
+                <div class="centered" id="scroll content">8 + 8 = 
+                    <input type="text" id="ans" style="width:40px; height: 40px"></input>
+                    <button type="button" class="btn btn-primary" id="submitButton" onclick="checkSum()">Ok</button>
+                </div>
+            </span>
+            <span class="container" id="treasure" style="visibility:hidden;left: 70vw; top: 70vh; width: 200px; height:200px">
+             
+            </span>
+            <hr>
+            <p id = "instructions">
+            To play, click anywhere on the empty space on the sand. Guess the correct answers to solve the puzzles and find the treasures.</p>
+	</body>
+</html>

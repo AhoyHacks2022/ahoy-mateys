@@ -1,0 +1,93 @@
+body {
+    background: #9ae2ff;
+    overflow-x: hidden;
+    width:100vw;
+}
+
+canvas {
+    /*
+    padding: 0;
+    margin: auto;
+    display: block;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border: 5px solid #f00;*/
+   
+    width:100vw; 
+    background-color: #874DA1;
+    background-image:    url(/Photos/Background.png);
+    background-size:     contain;                      
+    background-repeat:   no-repeat;
+    background-position: center;
+    border:0px solid #000000;
+}
+
+#shovel{
+    background-image: url("Photos/shovel.png");
+    top: 27px;
+
+    position: absolute;
+    width: 150px;
+    height: 125px;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+
+    animation: shovel-enter 1s ease-out;
+    animation-delay: 0s, 1s;
+
+    animation-fill-mode: forwards;
+}
+#scroll {
+    background-image: url("Photos/scroll.png");
+    background-size:     contain;                      
+    background-repeat:   no-repeat;
+    background-position: center;
+    font-family: Georgia, serif;
+    font-size: 30;
+
+    position: absolute;
+    text-align: left;
+    color: #764C29;
+}
+#treasure {
+    background-image: url("Photos/box.png");
+    background-size:     contain;                      
+    background-repeat:   no-repeat;
+    background-position: center;
+    position: absolute;
+}
+/* Centered text */
+.centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* keyframe animations */
+
+@keyframes shovel-enter {
+    from {
+        /*transform: translateX(55vw);*/
+        transform: translate(58vw,55vh);
+    }
+    to {
+        /*transform: translateX(55vw);*/ /* half way */
+        transform: translate(58vw,80vh);
+    }
+}
+
+
+#score{
+    text-align:center;
+}
+#instructions{
+    text-align: center;
+}
+h1 {
+    width: 100%;
+    text-align: center;
+}
