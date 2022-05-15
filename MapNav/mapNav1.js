@@ -10,6 +10,8 @@ var KEYCODE_A = 65;			//useful keycode
 var KEYCODE_D = 68;			//useful keycode
 var KEYCODE_S = 83;			//useful keycode
 
+var VIEWPORTSCALE = 2
+var OBJECTSCALE = VIEWPORTSCALE * 2
 // ----------------------------------------------
 
 // Define variables
@@ -25,8 +27,8 @@ var preload;
 var player = {
     x: 100,
     y: 100,
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
 	bitmap: null,
 }; // The player character
 
@@ -42,6 +44,7 @@ var waves = []
 var currents = []
 var balls = []
 var islands = []
+var ghostShips = []
 
 var islandInfo = {
 	generationOdds: 0.2,
@@ -52,9 +55,14 @@ var islandInfo = {
 	islandWidth: 60,
 	islandLocations: [],
 	border: 100,
-	numIslands: 0
+	numIslands: 0,
 }
 
+var ghostShipInfo = {
+	ghostShipOdds: 0.5,
+	numGhostShips: 0,
+	ghostLocations: [],
+}
 
 var messageField;		//Message display field
 var scoreField;
@@ -229,8 +237,6 @@ function generateIslands() {
 	while (islandInfo.numIslands < 3) {
 		islandArray = new Array(islandInfo.yTiles).fill().map(() => Array(islandInfo.xTiles).fill(0));
 		
-		console.log(islandArray)
-
 		for (let j = 0; j < islandInfo.yTiles; j++) {
 			for (let i = 0; i < islandInfo.xTiles; i++) {
 				// check if any of the tiles above it are filled
@@ -271,12 +277,15 @@ function generateIslands() {
 		}
 	}
 	
-	console.log(islandArray)
+	ghostArray = new Array(islandInfo.yTiles).fill().map(() => Array(islandInfo.xTiles).fill(0));
+
+	let countedIslands = 0
+	let countedGhosts = 0
 
 	for (let i = 0; i < islandInfo.xTiles; i++) {
 		for (let j = 0; j < islandInfo.yTiles; j++) {
 			if (islandArray[j][i] > 0) {
-				// add child
+				// render islands
 				let image;
 									
 				switch (islandArray[j][i]) {
@@ -297,13 +306,41 @@ function generateIslands() {
 
 				bitmap.x = islandInfo.border + i * islandInfo.distBtwn
 				bitmap.y = islandInfo.border + j * islandInfo.distBtwn
-				stage.addChild(bitmap)
+
+				islands.push(bitmap)
+				stage.addChild(islands[countedIslands])
+				countedIslands++
+
+				if (Math.random() < ghostShipInfo.ghostShipOdds) {
+					// generate ghost ship
+					ghostShipInfo.numGhostShips++;
+					ghostArray[j][i] = 1;
+
+					
+
+					// render ghost ships
+					image = preload.getResult("enemyShip")							
+
+					bitmap = new createjs.Bitmap(image)
+					bitmap.scaleX = player.width / viewportHeight 
+					bitmap.scaleY = player.width / viewportHeight 
+
+					bitmap.x = islandInfo.border + i * islandInfo.distBtwn + (islandInfo.distBtwn - islandInfo.islandWidth) * 2
+					bitmap.y = islandInfo.border + j * islandInfo.distBtwn
+					
+					
+					ghostShips.push(bitmap)
+					stage.addChild(ghostShips[countedGhosts])
+					countedGhosts++
+					
+				}
+
 			}	
 		}
 	}
 
-
 	islandInfo.islandLocations = islandArray
+	ghostShipInfo.ghostLocations = ghostArray
 
 
 	// iterate through bounds
