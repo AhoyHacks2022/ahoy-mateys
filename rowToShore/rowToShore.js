@@ -134,16 +134,16 @@ function buttonPressed() {
         runStone8 = 1;
     }
 
+    if (lives < 1) {
+        // end game
+        alert("Game Over!\nScore: " + score + " Lives: " + lives);
+    }
+
     if (stone8Left < -80) {
         // win game
         alert("Congradulations!\nYou have managed to successfully avoided the stones and navigated to the island!\nScore: " + score + " Lives: " + lives);
     }
 
-    if (lives < 1) {
-        // end game
-        alert("Game Over!\nScore: " + score + " Lives: " + lives);
-    }
-    
     // To display score and lives count in box
     document.getElementById("scoreSpan").innerHTML = score;
     document.getElementById("livesSpan").innerHTML = lives;

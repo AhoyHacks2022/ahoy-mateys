@@ -12,6 +12,8 @@
 <body style="background-color: white;">
     <div style="color: black; font-size: 20px; text-align: left; position: absolute; left: 50px;">Ahoy Mateys: Row To Shore</div>
     <div class="game" style="width:1000px; height: 640px; background-color: aqua; position: absolute; top: 50px; left: 50px;">
+        <img src="../rowToShore/images/background.jpg" style="width: 100%; height: 100%; position: absolute; top: 0px; left: 0px">
+        
         <div id="ship" style="width: 60px; height: 60px; background-color: black; position: absolute; top: 280px; left: 0px; color: white; font-size: 20px;">pirate</div>
         <!--<div id="ship">
             <img src="../rowToShore/images/pirate.png" style="width: 60px; height: 60px; position: absolute; top: 280px; left: 0px;">
@@ -32,8 +34,8 @@
         <button onclick="downPressed();" style="left: 1020px; top: 480px; position: absolute; padding: 10px; padding-left: 20px; padding-right: 20px;">\/</button>
         <button onclick="reset();" style="left: 1080px; top: 560px; position: absolute; padding: 10px; background-color: pink;">RESET</button>
         
-        <p>Score: <span id="scoreSpan"></span></p>
-        <p>Lives: <span id="livesSpan"></span></p>
+        <p style="background-color: greenyellow; color: black; position: absolute; top: 0px; left: 1020px;">Score:<span id="scoreSpan"></span></p>
+        <p style="background-color: greenyellow; color: black; position: absolute; top: 40px; left: 1020px;">Lives:<span id="livesSpan"></span></p>
     </div>
 
     <audio src="../rowToShore/sounds/fishing_sounds_waves.mp3" controls></audio>
