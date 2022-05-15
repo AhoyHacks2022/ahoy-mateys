@@ -9,6 +9,8 @@ var KEYCODE_W = 87;			//useful keycode
 var KEYCODE_A = 65;			//useful keycode
 var KEYCODE_D = 68;			//useful keycode
 var KEYCODE_S = 83;			//useful keycode
+var KEYCODE_O = 79;			//useful keycode
+var KEYCODE_P = 80;			//useful keycode
 
 var VIEWPORTSCALE = 2
 var OBJECTSCALE = VIEWPORTSCALE * 2
@@ -18,6 +20,9 @@ var SQRIMGHEIGHT = 1080
 
 // Define variables
 var shootHeld;			//is the user holding a shoot command
+var shootLeftHeld;			//is the user holding a shoot command
+var shootRightHeld;			//is the user holding a shoot command
+
 var lfHeld;				//is the user holding a turn left command
 var rtHeld;				//is the user holding a turn right command
 var fwdHeld;			//is the user holding a forward command
@@ -27,10 +32,9 @@ var stage;
 var preload;
 
 var player = {
-    x: 100,
-    y: 100,
     width: 40,
     height: 40,
+	rotation: 90,
 	bitmap: null,
 }; // The player character
 
@@ -59,6 +63,7 @@ var ghostShipInfo = {
 	ghostCenters: [],
 	rotationRate: 1.5,
 	distCenter: 100,
+	centerOffset: 30,
 }
 
 var messageField;		//Message display field
@@ -70,9 +75,13 @@ var playerSpeed = {
 	euclidean: 0,
 	x: 0,
 	y: 0,
+
+	rotationSpeed: 2,
+	acceleration: 0.05,
+	decceleration: 0.005,
+	maxSpeed: 10,
+
 }
-var acceleration = 3;
-var maxSpeed = 27;
 
 // optional health and ammo to implement
 var playerAmmo = 100;
@@ -190,7 +199,7 @@ function restart() {
 	generateIslands()
 
     // reset control variables
-	shootHeld = lfHeld = rtHeld = fwdHeld = dnHeld = false;
+	shootLeftHeld = shootRightHeld = lfHeld = rtHeld = fwdHeld = dnHeld = false;
     
     //ensure stage is blank
 	stage.clear();
@@ -214,7 +223,7 @@ function restart() {
 	
 	bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
 
-	bitmap.rotation = 180
+	bitmap.rotation = player.rotation
 	
 	player.bitmap = bitmap
 	stage.addChild(player.bitmap)
@@ -250,6 +259,10 @@ function generateIslands() {
 		
 		for (let j = 0; j < islandInfo.yTiles; j++) {
 			for (let i = 0; i < islandInfo.xTiles; i++) {
+				if (i == 0 && j == 0) {
+					continue;
+				} 
+				
 				// check if any of the tiles above it are filled
 				let isAdjacent = false
 
@@ -291,7 +304,7 @@ function generateIslands() {
 	ghostArray = new Array(islandInfo.yTiles).fill().map(() => Array(islandInfo.xTiles).fill(0));
 
 	while (ghostShipInfo.numGhostShips < 3) {
-		console.log("here")
+		// console.log("here")
 		let i = Math.floor(Math.random() * (islandInfo.xTiles))
 		let j = Math.floor(Math.random() * (islandInfo.yTiles))
 
@@ -338,14 +351,14 @@ function generateIslands() {
 
 				
 				if (ghostArray[j][i] == 1) {
-					console.log("boo")
+					// console.log("boo")
 					// render ghost ships
 					image = preload.getResult("enemyShip")						
 
 					bitmap = new createjs.Bitmap(image)
 
-					bitmap.x = islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2 + 10
-					bitmap.y = islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2 + 10 
+					bitmap.x = islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset
+					bitmap.y = islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset
 					
 					bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
 
@@ -372,50 +385,146 @@ function generateIslands() {
 	ghostShipInfo.ghostLocations = ghostArray
 }
 
-function handleTick(event) {
-    // console.log(player.bitmap)
-    
-	// process player inputs
-    if (lfHeld) {
-        player.bitmap.x = player.bitmap.x - 5
-		if (player.bitmap.x < player.width ) {
-			player.bitmap.x = player.width
-		}
-    }
+function calcXfromEuclidean(rotation, euclidean) {
+	if (rotation == 0 || rotation == 180) {
+		return 0
+	} 
 
-    if (rtHeld) {
-        player.bitmap.x = player.bitmap.x + 5
-		if (player.bitmap.x > viewportWidth - player.width ) {
-			player.bitmap.x = viewportWidth - player.width 
-		}
-    }
-
-    if (fwdHeld) {
-        player.bitmap.y = player.bitmap.y - 5
-		if (player.bitmap.y < player.height ) {
-			player.bitmap.y = player.height 
-		}
-    }
-
-    if (dnHeld) {
-        player.bitmap.y = player.bitmap.y + 5
-		if (player.bitmap.y > viewportHeight - player.height ) {
-			player.bitmap.y = viewportHeight - player.height 
-		}
-    }
-
-	// update enemy position
-	for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
-		ghostShips[i].rotation -= ghostShipInfo.rotationRate
-		let px = ghostShipInfo.ghostCenters[i].x + ghostShipInfo.distCenter  * Math.cos(ghostShips[i].rotation / 180 * Math.PI)
-		let py = ghostShipInfo.ghostCenters[i].y + ghostShipInfo.distCenter * Math.sin(ghostShips[i].rotation / 180 * Math.PI)
-
-		console.log(px)
-		ghostShips[i].x = px
-		ghostShips[i].y = py
+	if (rotation == 90 || rotation == 270) {
+		return euclidean
+	}
+	
+	if (rotation > 0 && rotation < 90) {
+		return Math.cos((90-rotation)/180 * Math.PI) * euclidean
 	}
 
-	// update cannonball rotation and posititions
+	if (rotation > 90 && rotation < 180) {
+		return Math.cos((rotation - 90)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 180 && rotation < 270) {
+		return - Math.cos((270 - rotation)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 270) {
+		return - Math.cos((rotation - 270)/180 * Math.PI) * euclidean
+	}
+
+	return 0
+}
+
+function calcYfromEuclidean(rotation, euclidean) {
+	if (rotation == 0 || rotation == 180) {
+		return euclidean
+	} 
+
+	if (rotation == 90 || rotation == 270) {
+		return 0
+	}
+	
+	if (rotation > 0 && rotation < 90) {
+		return - Math.sin((90-rotation)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 90 && rotation < 180) {
+		return Math.sin((rotation - 90)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 180 && rotation < 270) {
+		return Math.sin((270 - rotation)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 270) {
+		return - Math.sin((rotation - 270)/180 * Math.PI) * euclidean
+	} 
+
+	return 0
+}
+
+// TODO: implement max speed function
+
+
+function handleTick(event) {
+	if (gameState == "playing") {
+		if (lfHeld) {
+			player.bitmap.rotation -= playerSpeed.rotationSpeed
+		}
+		
+		if (rtHeld) {
+			player.bitmap.rotation += playerSpeed.rotationSpeed
+		}
+		
+		if (fwdHeld) {
+			let accX = calcXfromEuclidean(player.bitmap.rotation, playerSpeed.acceleration)
+			let accY = calcYfromEuclidean(player.bitmap.rotation, playerSpeed.acceleration)
+
+			playerSpeed.x += accX
+			playerSpeed.y += accY
+			
+		}
+
+		console.log(playerSpeed.x)
+		
+		if (shootHeld) {
+			
+		}
+
+		if (playerSpeed.x > playerSpeed.decceleration) {
+			playerSpeed.x -= playerSpeed.decceleration
+		} else if (playerSpeed.x < - playerSpeed.decceleration) {
+			playerSpeed.x += playerSpeed.decceleration
+		} else {
+			playerSpeed.x = 0
+		}
+
+		if (playerSpeed.x > playerSpeed.maxSpeed) {
+			playerSpeed.x = playerSpeed.maxSpeed
+		} else if (playerSpeed.x < - playerSpeed.maxSpeed) {
+			playerSpeed.x = -playerSpeed.maxSpeed
+		}
+
+		if (playerSpeed.y > playerSpeed.decceleration) {
+			playerSpeed.y -= playerSpeed.decceleration
+		} else if (playerSpeed.y < - playerSpeed.decceleration) {
+			playerSpeed.y += playerSpeed.decceleration
+		} else {
+			playerSpeed.y = 0
+		}
+
+		player.bitmap.x += playerSpeed.x
+		player.bitmap.y += playerSpeed.y
+
+		// keep player in bounds
+		if (player.bitmap.y > viewportHeight - player.height * 1.5 ) {
+		    player.bitmap.y = viewportHeight - player.height * 1.5 
+			playerSpeed.y = 0
+		}
+		if (player.bitmap.y < player.height ) {
+		    player.bitmap.y = player.height 
+			playerSpeed.y = 0
+		}
+		if (player.bitmap.x > viewportWidth - player.width * 1.5 ) {
+		    player.bitmap.x = viewportWidth - player.width * 1.5 
+			playerSpeed.x = 0
+		} 
+		if (player.bitmap.x < player.width ) {
+		    player.bitmap.x = player.width
+			playerSpeed.x = 0
+		}
+		
+		
+		// update enemy position
+		for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
+			ghostShips[i].rotation -= ghostShipInfo.rotationRate
+			let px = ghostShipInfo.ghostCenters[i].x + ghostShipInfo.distCenter  * Math.cos(ghostShips[i].rotation / 180 * Math.PI)
+			let py = ghostShipInfo.ghostCenters[i].y + ghostShipInfo.distCenter * Math.sin(ghostShips[i].rotation / 180 * Math.PI)
+
+			ghostShips[i].x = px
+			ghostShips[i].y = py
+		}
+
+		// update cannonball rotation and posititions
+	}
 
 	stage.update();
 }
@@ -504,9 +613,16 @@ function handleKeyUp(e) {
 		var e = window.event;
 	}
 	switch (e.keyCode) {
-		case KEYCODE_SPACE:
-			shootHeld = false;
+		// case KEYCODE_SPACE:
+		// 	shootHeld = false;
+		// 	break;
+		case KEYCODE_O:
+			shootLeftHeld = false;
 			break;
+		case KEYCODE_P:
+			shootRightHeld = false;
+			break;
+
 		case KEYCODE_A:
 		case KEYCODE_LEFT:
 			lfHeld = false;
