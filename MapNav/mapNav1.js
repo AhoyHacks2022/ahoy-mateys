@@ -22,6 +22,9 @@ var GHOSTSHIPCOLLISIONRADIUS = 20
 var GHOSTDAMAGERADIUS = 25
 var PLAYERDAMAGERADIUS = 20
 
+var COOLDOWNTIMERPLAYER = 30
+var COOLDOWNTIMERENEMY = 30
+
 // ----------------------------------------------
 
 // Define variables
@@ -37,20 +40,15 @@ var dnHeld;
 var stage;
 var preload;
 
+// The player character
 var player = {
     width: 40,
     height: 40,
 	rotation: 90,
-	health: 100,
+	health: 200,
+	// ammo: 100,
 	bitmap: null,
-}; // The player character
-
-// Bitmaps
-var waves = []
-var currents = []
-var balls = []
-var islands = []
-var ghostShips = []
+}; 
 
 var islandInfo = {
 	generationOdds: 0.2,
@@ -71,15 +69,21 @@ var ghostShipInfo = {
 	ghostLocations: [],
 	ghostCenters: [],
 	ghostHealth: [],
+	cooldownTimers: [],
 	rotationRate: 1.5,
 	distCenter: 100,
 	centerOffset: 20,
 }
 
-var messageField;		//Message display field
-var scoreField;
-var healthField;			//score Field
-
+var cannonBall = {
+	rotationSpeed: 5,
+	speed: 10,
+	width: 10,
+	activePlayer: [],
+	activeEnemy: [],
+	numPlayer: 0,
+	numEnemy: 0,
+}
 
 var playerSpeed = {
 	euclidean: 0,
@@ -90,19 +94,25 @@ var playerSpeed = {
 	acceleration: 0.05,
 	decceleration: 0.005,
 	maxSpeed: 4,
-
 }
 
-var cannonBall = {
-	rotation: 5,
-	speed: 10
-}
+// Bitmaps
+// var waves = []
+// var currents = []
+var islands = []
+var ghostShips = []
 
-// optional health and ammo to implement
-var playerAmmo = 100;
-var playerHealth = 100;
 
-var shipCollisionDamageTicker
+// Misc Messages
+var messageField;		//Message display field
+var scoreField;
+var healthField;			//score Field
+
+
+// timers
+var shipCollisionDamageTicker = 0
+var shootCooldownTimerPlayerL = 0
+var shootCooldownTimerPlayerR = 0
 
 var loadingInterval = 0;
 
@@ -220,11 +230,14 @@ function restart() {
 	stage.clear();
 
 	// // healthField text
-	// healthField = new createjs.Text("0", "bold 18px Arial", "#FFFFFF");
-	// healthField.textAlign = "right";
-	// healthField.x = canvas.width - 20;
-	// healthField.y = 20;
-	// healthField.maxWidth = 1000;
+	healthField = new createjs.Text("Health: " + String(player.health) + " / 200", "bold 18px Arial", "#15538c");
+	healthField.textAlign = "right";
+	healthField.x = canvas.width - 20;
+	healthField.y = 20;
+	healthField.maxWidth = 1000;
+
+	stage.addChild(healthField);
+	stage.update(); 
 	
 	// player ship
 	let	image = preload.getResult("playerShip")							
@@ -233,8 +246,8 @@ function restart() {
 	bitmap.scaleX = player.width / viewportHeight 
 	bitmap.scaleY = player.width / viewportHeight 
 
-	bitmap.x = Math.floor(islandInfo.border/3) 
-	bitmap.y = Math.floor(islandInfo.border/3) 
+	bitmap.x = Math.floor(islandInfo.border/3 * 2) 
+	bitmap.y = Math.floor(islandInfo.border/3 * 2) 
 	
 	bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
 
@@ -460,6 +473,21 @@ function keepPlayerInBounds() {
 	}
 }
 
+// TODO: code player health decrease 
+function playerDamaged() {
+	// check invincibiliity timer
+
+	// set damage invincibility timer
+
+	// decrease player healthby 1
+
+}
+
+// TODO: game over condition
+function gameover() {
+
+}
+
 
 function keepPlayerOffIslands() {
 	for (let i = 0; i < islandInfo.numIslands; i++) {
@@ -473,10 +501,10 @@ function keepPlayerOffIslands() {
 			player.bitmap.x = islandInfo.islandCenters[i].x + calcXfromEuclidean(calc.angle, ISLANDCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
 			player.bitmap.y = islandInfo.islandCenters[i].y - calcYfromEuclidean(calc.angle, ISLANDCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
 
-			// console.log(calc)
-
 			playerSpeed.x = 0
 			playerSpeed.y = 0
+
+			playerDamaged()
 		}
 	}
 }
@@ -486,7 +514,7 @@ function playerEnemyCollisionCheck() {
 		let calc = calc2points(ghostShips[i].x, ghostShips[i].y,
 			player.bitmap.x, player.bitmap.y
 			)
-		// console.log(ghostShips)
+
 		if (calc.distance < GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS) {
 			
 			// move the ship away from the island on the tangent
@@ -496,15 +524,197 @@ function playerEnemyCollisionCheck() {
 			playerSpeed.x = 0
 			playerSpeed.y = 0
 
-			// console.log("GHOST")
-
 		}
 	}
+}
+
+
+function fireCannonPort(shooter, x=0, y=0, rotation=0) {
+
+	// create cannon ball bitmap
+	image = preload.getResult("cannonBall")	
+	bitmap = new createjs.Bitmap(image)
+
+	bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
+	bitmap.scale = cannonBall.width / viewportHeight 
+
+	let spdX 
+	let spdY
+
+	if (shooter == "player") {
+		bitmap.x = player.bitmap.x
+		bitmap.y = player.bitmap.y
+
+		// calculate ball speed
+		spdX = calcXfromEuclidean((player.bitmap.rotation + 360 - 90)%360, cannonBall.speed)
+		spdY = calcYfromEuclidean((player.bitmap.rotation + 360 - 90)%360, cannonBall.speed)
+	} else {
+		bitmap.x = x
+		bitmap.y = y
+
+		spdX= calcXfromEuclidean((rotation + 360 - 90)%360, cannonBall.speed)
+		spdY= calcYfromEuclidean((rotation + 360 - 90)%360, cannonBall.speed)
+	}
+
+	var newBall = {
+		direction: {
+			x: spdX,
+			y: spdY,
+		},
+		bitmap: bitmap
+	}
+
+	if (shooter == "player") {
+		cannonBall.activePlayer.push(newBall)
+		stage.addChild(cannonBall.activePlayer[cannonBall.numPlayer].bitmap)
+		cannonBall.numPlayer++
+	} else {
+		cannonBall.activeEnemy.push(newBall)
+		stage.addChild(cannonBall.activeEnemy[cannonBall.numEnemy].bitmap)
+		cannonBall.numEnemy++
+	}
+
+}
+
+function fireCannonStarboard(shooter, x=0, y=0, rotation=0) {
+	// create cannon ball bitmap
+	image = preload.getResult("cannonBall")	
+	bitmap = new createjs.Bitmap(image)
+
+	bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
+	bitmap.scale = cannonBall.width / viewportHeight 
+
+	let spdX 
+	let spdY
+
+	if (shooter == "player") {
+		bitmap.x = player.bitmap.x
+		bitmap.y = player.bitmap.y
+
+		// calculate ball speed
+		spdX = calcXfromEuclidean((player.bitmap.rotation + 360 + 90)%360, cannonBall.speed)
+		spdY = calcYfromEuclidean((player.bitmap.rotation + 360 + 90)%360, cannonBall.speed)
+	} else {
+		bitmap.x = x
+		bitmap.y = y
+
+		spdX= calcXfromEuclidean((rotation + 360 + 90)%360, cannonBall.speed)
+		spdY= calcYfromEuclidean((rotation + 360 + 90)%360, cannonBall.speed)
+	}
+
+	var newBall = {
+		direction: {
+			x: spdX,
+			y: spdY,
+		},
+		bitmap: bitmap
+	}
+
+	if (shooter == "player") {
+		cannonBall.activePlayer.push(newBall)
+		stage.addChild(cannonBall.activePlayer[cannonBall.numPlayer].bitmap)
+		cannonBall.numPlayer++
+	} else {
+		cannonBall.activeEnemy.push(newBall)
+		stage.addChild(cannonBall.activeEnemy[cannonBall.numEnemy].bitmap)
+		cannonBall.numEnemy++
+	}
+}
+
+
+function enemyDamanged(j) {
+	// reduce enemy health points
+	ghostShipInfo.ghostHealth[j] -=  10
+
+	if (ghostShipInfo.ghostHealth[j] <= 0) {
+		// despawn the enemy
+
+		// reduce enemy count
+
+		// check if win (no enemy left)
+	}
+}
+
+function cannonBallUpdates() {
+	let cannonballsToDestroy = []
+
+	// for each of the cannnon balls in the player array
+	for (let i = 0; i < cannonBall.numPlayer; i++) {
+
+		// update cannonball collision
+		let cX = cannonBall.activePlayer[i].bitmap.x + cannonBall.activePlayer[i].direction.x
+		let cY = cannonBall.activePlayer[i].bitmap.y + cannonBall.activePlayer[i].direction.y
+
+		// check if cannonball is still on map
+		if (cX < 0 || cY < 0 || cX > viewportWidth || cY > viewportHeight) {
+			// destroy cannonball
+			cannonballsToDestroy.push(i)
+			continue
+		}
+
+		cannonBall.activePlayer[i].bitmap.x = cX
+		cannonBall.activePlayer[i].bitmap.y = cY
+
+		// check if collision with land
+		if (cX > islandInfo.border && cX < viewportWidth - islandInfo.border) {
+			if (cY > islandInfo.border && cY < viewportHeight - islandInfo.border) {
+				// check which grid space
+				let gridX = Math.floor((cX - islandInfo.border) / islandInfo.distBtwn)
+				let gridY = Math.floor((cY - islandInfo.border) / islandInfo.distBtwn)
+
+				// check if that grid has an island
+				if (gridX < islandInfo.xTiles && gridY < islandInfo.yTiles) {
+					if (islandInfo.islandLocations[gridY][gridX] == 1) {
+						// check if in radius of the island touches the orb
+						let calc = calc2points(islandInfo.islandCenters[gridX].x, islandInfo.islandCenters[gridY].y, 
+							cX + cannonBall.width / 2, 
+							cY + cannonBall.width / 2)
+
+						if (calc.distance < ISLANDCOLLISIONRADIUS) {
+							// destroy cannonball
+							cannonballsToDestroy.push(i)
+							continue;
+						}
+					}
+				}
+			}
+		}
+
+		//  check if collision with enemy
+		for (let j = 0; j < ghostShipInfo.numGhostShips; j++) {
+			let calc = calc2points(ghostShips[j].x, ghostShips[j].y, 
+				cX + cannonBall.width / 2, 
+				cY + cannonBall.width / 2)
+
+			if (calc.distance < ISLANDCOLLISIONRADIUS) {
+				console.log("landed a hit!")
+				// destroy cannonball
+				cannonballsToDestroy.push(i)
+
+				enemyDamanged(j);
+			}
+		}
+	}
+
+	// destroy player cannon balls
+	for (let i = 0; i < cannonballsToDestroy.length; i++ ) {
+
+	}
+
+	cannonballsToDestroy = []
+
+	// for each of the cannon balls in the enemy array
+	 
+
+
+	// destroy enemy cannonballs
+
 }
 
 function cannonBallCollisionCheck() {
 
 }
+
 
 function handleTick(event) {
 	if (gameState == "playing") {
@@ -539,12 +749,33 @@ function handleTick(event) {
 			playerSpeed.y += accY
 		}
 
+		if (shootCooldownTimerPlayerL > 0) {
+			shootCooldownTimerPlayerL -= 2
+		}
+
+		if (shootCooldownTimerPlayerR > 0) {
+			shootCooldownTimerPlayerR -= 2
+		}
+
 		if (shootLeftHeld) {
+			if (shootCooldownTimerPlayerL == 0) {
+				// fire cannon ball from port
+				shootCooldownTimerPlayerL = COOLDOWNTIMERPLAYER
+
+				fireCannonPort("player")
+
+			}
 			
 		}
 
 		if (shootRightHeld) {
-			
+			if (shootCooldownTimerPlayerR == 0) {
+				// fire cannon ball from starboard
+				shootCooldownTimerPlayerR = COOLDOWNTIMERPLAYER
+
+				fireCannonStarboard("player")
+
+			}
 		}
 
 		// update player speed
@@ -565,11 +796,16 @@ function handleTick(event) {
 			ghostShips[i].y = py
 		}
 
-		// check player collision with enemy
-		playerEnemyCollisionCheck()
+		cannonBallUpdates()
 
 		// update cannonball rotation and posititions
 		cannonBallCollisionCheck()
+
+
+		// check player collision with enemy
+		playerEnemyCollisionCheck()
+
+		
 
 	}
 
