@@ -254,11 +254,12 @@ window.onload = function () {
   }
 
   function showMap() {
-    gameContainer.innerHTML = `<img id="treasure" src="images/treasuremap.svg"><div id="btnNext">Next</div>`;
+    gameContainer.innerHTML = `<img id="treasuremap" src="images/treasuremap.svg"><div id="btnNext">Next</div>`;
     document.getElementById("treasuremap").addEventListener("click", () => {
       crinkle.play();
     });
     document.getElementById("btnNext").addEventListener("click", () => {
+      console.log("clicked");
       window.location.replace('../MapNav/mapNav1.html');
     });
   }

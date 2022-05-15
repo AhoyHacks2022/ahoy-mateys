@@ -41,9 +41,10 @@ body {
   background-image: -ms-linear-gradient(top, #00c5d9, #066a9b);
   background-image: -o-linear-gradient(top, #00c5d9, #066a9b);
   background-image: linear-gradient(top, #00c5d9, #066a9b);
-  font-size: 21px;
+  height: 100vh; 
+	margin: 0;
+	padding: 0;
   height: 100vh;
-  color: white;
 }
 
 #game-container {
