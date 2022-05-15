@@ -127,7 +127,13 @@ var gameState = "idle"
 
 
 // Waves
-var waves = {}
+var waves = {
+	width: 30,
+	height: 30,
+	waveArr: [],
+}
+
+var soundInstance 
 
 
 // ----------------------------------------------
@@ -299,6 +305,12 @@ function resetGameVar() {
 		loadingInterval = 0;
 	
 		gameState = "idle"
+
+		waves = {
+			width: 30,
+			height: 30,
+			waveArr: [],
+		}
 }
 
 
@@ -331,20 +343,17 @@ function restart() {
 	
 	// player ship
 	let	image = preload.getResult("playerShip")							
-	
 	let bitmap = new createjs.Bitmap(image)
 	bitmap.scaleX = player.width / viewportHeight 
 	bitmap.scaleY = player.width / viewportHeight 
-
 	bitmap.x = Math.floor(islandInfo.border/3 * 2) 
 	bitmap.y = Math.floor(islandInfo.border/3 * 2) 
-	
 	bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
-
 	bitmap.rotation = player.rotation
-	
 	player.bitmap = bitmap
 	stage.addChild(player.bitmap)
+
+	console.log(waves)
 
 	gameState = "playing"
 
@@ -434,6 +443,55 @@ function generateIslands() {
 	console.log(ghostArray)
 	let countedIslands = 0
 	var countedGhosts = 0
+
+	// init waves
+	for (let i = 0; i < 2; i++) {
+		// player ship
+		image = preload.getResult("waves1")		
+		bitmap = new createjs.Bitmap(image)
+		bitmap.scaleX = waves.width / viewportHeight 
+		bitmap.scaleY = waves.height / viewportHeight 
+		bitmap.x = Math.random() * viewportWidth
+		bitmap.y = Math.random() * viewportHeight
+		bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
+
+		let newWave = {
+			bitmap: bitmap,
+			distMove: 10,
+			spdX: ((Math.random() - 0.5) * 2) * 5,
+			spdY: ((Math.random() - 0.5) * 2) * 10,
+			startY: bitmap.y,
+			angle: 0,
+		}
+
+		waves.waveArr.push(newWave)
+		stage.addChild(waves.waveArr[i].bitmap)
+	}
+
+	// init waves
+	for (let i = 0; i < 2; i++) {
+		// player ship
+		image = preload.getResult("waves2")		
+		bitmap = new createjs.Bitmap(image)
+		bitmap.scaleX = waves.width / viewportHeight 
+		bitmap.scaleY = waves.height / viewportHeight 
+		bitmap.x = Math.random() * viewportWidth
+		bitmap.y = Math.random() * viewportHeight
+		bitmap.regX = bitmap.regY = SQRIMGHEIGHT / 2;
+
+		let newWave = {
+			bitmap: bitmap,
+			distMove: 10,
+			spdX: ((Math.random() - 0.5) * 2) * 5,
+			spdY: ((Math.random() - 0.5) * 2) * 10,
+			startY: bitmap.y,
+			angle: 0,
+			opacity: 0,
+		}
+
+		waves.waveArr.push(newWave)
+		stage.addChild(waves.waveArr[i].bitmap)
+	}
 
 
 	for (let i = 0; i < islandInfo.xTiles; i++) {
@@ -586,7 +644,8 @@ function playerDamaged() {
 }
 
 function gameover() {
-	createjs.Sound.play("loseMusic", {interrupt: createjs.Sound.INTERRUPT_ANY});
+	soundInstance = createjs.Sound.play("loseMusic", {interrupt: createjs.Sound.INTERRUPT_ANY});
+	soundInstance.volume = 0.5;
 
 	stage.removeAllChildren()
 	stage.clear()
@@ -768,7 +827,8 @@ function enemyDamanged(j) {
 
 function gameWon() {
 	createjs.Sound.stop();
-	createjs.Sound.play("winMusic", {interrupt: createjs.Sound.INTERRUPT_NONE, loop: -1, volume: 0.4});
+	soundInstance = createjs.Sound.play("winMusic", {interrupt: createjs.Sound.INTERRUPT_NONE, loop: -1, volume: 0.4});
+	soundInstance.volume = 0.5;
 	
 
 	stage.removeAllChildren()
@@ -1046,7 +1106,26 @@ function handleTick(event) {
 		// check player collision with enemy
 		playerEnemyCollisionCheck()
 
+		for (let n = 0; n < 4; n++) {
+			waves.waveArr[n].angle += 6 // waves.waveArr[n].angle.spdY
+			if (waves.waveArr[n].angle > 580 || waves.waveArr[n].angle < - 580) {
+				waves.waveArr[n].bitmap.x = Math.random() * viewportHeight
+				waves.waveArr[n].bitmap.y = Math.random() * viewportHeight
+				waves.waveArr[n].startY = waves.waveArr[n].bitmap.y
+				waves.waveArr[n].spdX = ((Math.random() - 0.5) * 2) * 5
+				waves.waveArr[n].spdY = ((Math.random() - 0.5) * 2) * 10
+				waves.waveArr[n].angle = 0
+			}
+
+			waves.waveArr[n].bitmap.x += waves.waveArr[n].spdX
+			waves.waveArr[n].bitmap.y = waves.waveArr[n].startY + waves.waveArr[n].spdY * Math.cos(waves.waveArr[n].angle)
+
+			waves.waveArr[n].bitmap.alpha = Math.sin(waves.waveArr[n].angle / 570 * Math.PI)
+		}
+
 	}
+
+
 
 	stage.update();
 }
@@ -1075,7 +1154,8 @@ function doneLoading(event) {
 	stage.addChild(overlayBitmap)
 
 	// start the music
-	createjs.Sound.play("battleMusic", {interrupt: createjs.Sound.INTERRUPT_NONE, loop: -1, volume: 0.4});
+	soundInstance = createjs.Sound.play("battleMusic", {interrupt: createjs.Sound.INTERRUPT_NONE, loop: -1, volume: 0.4});
+	soundInstance.volume = 0.5;
 
 	watchRestart();
 }
