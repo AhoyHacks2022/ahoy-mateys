@@ -496,6 +496,14 @@ function handleTick(event) {
 		} else {
 			playerSpeed.decceleration = 0.005
 		}
+
+		while (player.bitmap.rotation < 0) {
+			player.bitmap.rotation += 360
+		}
+		
+		while (player.bitmap.rotation > 360) {
+			player.bitmap.rotation -= 360
+		}
 		
 		if (fwdHeld) {
 			let accX = calcXfromEuclidean(player.bitmap.rotation, playerSpeed.acceleration)
