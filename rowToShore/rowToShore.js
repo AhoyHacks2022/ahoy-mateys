@@ -17,6 +17,7 @@ var stone6 = document.getElementById("stone6");
 var stone7 = document.getElementById("stone7");
 var stone8 = document.getElementById("stone8");
 
+/*
 var shipTop = parseInt(window.getComputedStyle(ship).getPropertyValue("top"));
 var stone0Left = parseInt(window.getComputedStyle(stone0).getPropertyValue("left"));
 var stone1Left = parseInt(window.getComputedStyle(stone1).getPropertyValue("left"));
@@ -27,6 +28,7 @@ var stone5Left = parseInt(window.getComputedStyle(stone5).getPropertyValue("left
 var stone6Left = parseInt(window.getComputedStyle(stone6).getPropertyValue("left"));
 var stone7Left = parseInt(window.getComputedStyle(stone7).getPropertyValue("left"));
 var stone8Left = parseInt(window.getComputedStyle(stone8).getPropertyValue("left"));
+*/
 
 var runStone0 = 1;
 var runStone1 = 0;
@@ -183,21 +185,140 @@ function activateStone() {
     moveStone();
 }
 
+function buttonPressed() {
+    if (runStone0 == 1) {
+        stone0.style.left = (parseInt(stone0.style.left) - 100) + "px";
+    } else if (runStone1 == 1) {
+        stone1.style.left = (parseInt(stone1.style.left) - 100) + "px";
+    } else if (runStone2 == 1) {
+        stone2.style.left = (parseInt(stone2.style.left) - 100) + "px";
+    } else if (runStone3 == 1) {
+        stone3.style.left = (parseInt(stone3.style.left) - 100) + "px";
+    } else if (runStone4 == 1) {
+        stone4.style.left = (parseInt(stone4.style.left) - 100) + "px";
+    } else if (runStone5 == 1) {
+        stone5.style.left = (parseInt(stone5.style.left) - 100) + "px";
+    } else if (runStone6 == 1) {
+        stone6.style.left = (parseInt(stone6.style.left) - 100) + "px";
+    } else if (runStone7 == 1) {
+        stone7.style.left = (parseInt(stone7.style.left) - 100) + "px";
+    } else if (runStone8 == 1) {
+        stone8.style.left = (parseInt(stone8.style.left) - 100) + "px";
+    }
+
+    let shipTop = parseInt(window.getComputedStyle(ship).getPropertyValue("top"));
+    let stone0Left = parseInt(window.getComputedStyle(stone0).getPropertyValue("left"));
+    let stone1Left = parseInt(window.getComputedStyle(stone1).getPropertyValue("left"));
+    let stone2Left = parseInt(window.getComputedStyle(stone2).getPropertyValue("left"));
+    let stone3Left = parseInt(window.getComputedStyle(stone3).getPropertyValue("left"));
+    let stone4Left = parseInt(window.getComputedStyle(stone4).getPropertyValue("left"));
+    let stone5Left = parseInt(window.getComputedStyle(stone5).getPropertyValue("left"));
+    let stone6Left = parseInt(window.getComputedStyle(stone6).getPropertyValue("left"));
+    let stone7Left = parseInt(window.getComputedStyle(stone7).getPropertyValue("left"));
+    let stone8Left = parseInt(window.getComputedStyle(stone8).getPropertyValue("left"));
+    
+    if (runStone0 == 1 && shipTop <= 80 && stone0Left <= 60 && stone0Left >= -80) {
+        lives--;
+    } else if (runStone1 == 1 && shipTop >= 10 && shipTop <= 150 && stone1Left <= 60 && stone1Left >= -80) {
+        lives--;
+    } else if (runStone2 == 1 && shipTop >= 80 && shipTop <= 220 && stone2Left <= 60 && stone2Left >= -80) {
+        lives--;
+    } else if (runStone3 == 1 && shipTop >= 150 && shipTop <= 290 && stone3Left <= 60 && stone3Left >= -80) {
+        lives--;
+    } else if (runStone4 == 1 && shipTop >= 220 && shipTop <= 360 && stone4Left <= 60 && stone4Left >= -80) {
+        lives--;
+    } else if (runStone5 == 1 && shipTop >= 290 && shipTop <= 430 && stone5Left <= 60 && stone5Left >= -80) {
+        lives--;
+    } else if (runStone6 == 1 && shipTop >= 360 && shipTop <= 500 && stone6Left <= 60 && stone6Left >= -80) {
+        lives--;
+    } else if (runStone7 == 1 && shipTop >= 430 && shipTop <= 570 && stone7Left <= 60 && stone7Left >= -80) {
+        lives--;
+    } else if (runStone8 == 1 && shipTop >= 500 && stone8Left <= 60 && stone8Left >= -80) {
+        lives--;
+    } else {
+        score++;
+    }
+
+    if (stone0Left < -80) {
+        runStone0 = 0;
+        runStone1 = 1;
+    }
+
+    if (stone1Left < -80) {
+        runStone1 = 0;
+        runStone2 = 1;
+    }
+
+    if (stone2Left < -80) {
+        runStone2 = 0;
+        runStone3 = 1;
+    }
+
+    if (stone3Left < -80) {
+        runStone3 = 0;
+        runStone4 = 1;
+    }
+
+    if (stone4Left < -80) {
+        runStone4 = 0;
+        runStone5 = 1;
+    }
+
+    if (stone5Left < -80) {
+        runStone5 = 0;
+        runStone6 = 1;
+    }
+
+    if (stone6Left < -80) {
+        runStone6 = 0;
+        runStone7 = 1;
+    }
+
+    if (stone7Left < -80) {
+        runStone7 = 0;
+        runStone8 = 1;
+    }
+
+    if (stone8Left < -80) {
+        alert("You have managed to successfully avoided the rocks!\n Score: " + score + " Lives: " + lives)
+    }
+
+    if (lives < 1) {
+        // end game
+        alert("Game Over! Score: " + score + " Lives: " + lives);
+    }
+    
+    document.getElementById("scoreSpan").innerHTML = score;
+    document.getElementById("livesSpan").innerHTML = lives;
+}
+
 function upPressed() {
     ship.style.top = (parseInt(ship.style.top) - 30) + "px";
 
-    activateStone();
+    //activateStone();
+    buttonPressed();
 }
 
 function downPressed() {
     ship.style.top = (parseInt(ship.style.top) + 30) + "px";
 
-    activateStone();
+    //activateStone();
+    buttonPressed();
 }
 
 function reset() {
     lives = 3;
     score = 0;
+
+    runStone0 = 1;
+    runStone1 = 0;
+    runStone2 = 0;
+    runStone3 = 0;
+    runStone4 = 0;
+    runStone5 = 0;
+    runStone6 = 0;
+    runStone7 = 0;
+    runStone8 = 0;
 
     document.getElementById("scoreSpan").innerHTML = score;
     document.getElementById("livesSpan").innerHTML = lives;
