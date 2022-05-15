@@ -43,6 +43,18 @@ var currents = []
 var balls = []
 var islands = []
 
+var islandInfo = {
+	generationOdds: 0.2,
+	islandFill: 0.3,
+	distBtwn: 100,
+	xTiles: 5,
+	yTiles: 5,
+	islandWidth: 60,
+	islandLocations: [],
+	border: 100,
+	numIslands: 0
+}
+
 
 var messageField;		//Message display field
 var scoreField;
@@ -57,7 +69,10 @@ var playerSpeed = {
 var acceleration = 3;
 var maxSpeed = 27;
 
+// optional health and ammo to implement
 var playerAmmo = 100;
+var playerHealth = 100;
+
 var cannonBallRotation = 5;
 
 var loadingInterval = 0;
@@ -163,6 +178,8 @@ function restart() {
 
     // reset game variables
 	
+	// generate island locations
+	generateIslands()
 
     // reset control variables
 	shootHeld = lfHeld = rtHeld = fwdHeld = dnHeld = false;
@@ -172,6 +189,18 @@ function restart() {
 
 	// add the game play elements
 
+	// // healthField text
+	// healthField = new createjs.Text("0", "bold 18px Arial", "#FFFFFF");
+	// healthField.textAlign = "right";
+	// healthField.x = canvas.width - 20;
+	// healthField.y = 20;
+	// healthField.maxWidth = 1000;
+	
+	// player ship
+	
+	// bitmap.scaleX = 50 / viewportHeight 
+	// bitmap.scaleY = 50 / viewportHeight 
+
 
     //start game timer
 	if (!createjs.Ticker.hasEventListener("tick")) {
@@ -180,10 +209,110 @@ function restart() {
 
 }
 
-var i = 0;
+function generateIslands() {
+	// clear existing islands
+	islands = []
+
+	// calculate bounds for island generation
+	let distX = viewportWidth - islandInfo.border - islandInfo.islandWidth
+	let distY = viewportHeight - islandInfo.border - islandInfo.islandWidth
+
+	islandInfo.xTiles = Math.floor(distX / islandInfo.distBtwn)
+	islandInfo.yTiles = Math.floor(distY / islandInfo.distBtwn)
+
+	console.log(islandInfo)
+
+	islandInfo.numIslands = 0
+
+	let islandArray
+
+	while (islandInfo.numIslands < 3) {
+		islandArray = new Array(islandInfo.yTiles).fill().map(() => Array(islandInfo.xTiles).fill(0));
+		
+		console.log(islandArray)
+
+		for (let j = 0; j < islandInfo.yTiles; j++) {
+			for (let i = 0; i < islandInfo.xTiles; i++) {
+				// check if any of the tiles above it are filled
+				let isAdjacent = false
+
+				if (j != 0 ) {
+					if (i < islandInfo.xTiles - 1) {
+						// check the top right corner cell
+						isAdjacent = islandArray[j - 1][i + 1] > 0  || isAdjacent
+					} 
+
+					if (i != 0) {	
+						// check top left cell
+						isAdjacent = islandArray[j - 1][i - 1] > 0  || isAdjacent
+					}
+
+					// check the top middle cell
+					isAdjacent = islandArray[j - 1][i] > 0  || isAdjacent
+				} 
+				
+				if (i != 0) {
+					// check left cell
+					isAdjacent = islandArray[j][i - 1] > 0 || isAdjacent
+				}
+				
+				// attempt to generate island if its not adjacent
+				if (!isAdjacent) {
+					if (Math.random() < islandInfo.generationOdds) {
+
+						// add island and type to map
+						islandArray[j][i] = Math.ceil(Math.random() * 3);
+
+						islandInfo.numIslands++;
+						
+					}
+				}
+			}
+		}
+	}
+	
+	console.log(islandArray)
+
+	for (let i = 0; i < islandInfo.xTiles; i++) {
+		for (let j = 0; j < islandInfo.yTiles; j++) {
+			if (islandArray[j][i] > 0) {
+				// add child
+				let image;
+									
+				switch (islandArray[j][i]) {
+					case 1:
+						image = preload.getResult("island1")
+						break;
+					case 2:
+						image = preload.getResult("island2")
+						break;
+					default:
+						image = preload.getResult("island3")							
+				}
+
+				let bitmap = new createjs.Bitmap(image)
+
+				bitmap.scaleX = islandInfo.islandWidth / viewportHeight 
+				bitmap.scaleY = islandInfo.islandWidth / viewportHeight 
+
+				bitmap.x = islandInfo.border + i * islandInfo.distBtwn
+				bitmap.y = islandInfo.border + j * islandInfo.distBtwn
+				stage.addChild(bitmap)
+			}	
+		}
+	}
+
+
+	islandInfo.islandLocations = islandArray
+
+
+	// iterate through bounds
+}
+
 function handleTick(event) {
     // console.log(playerSprite)
     
+	// process player inputs
     if (lfHeld) {
         playerSprite.x = playerSprite.x - 5
 		if (playerSprite.x < player.width ) {
@@ -212,6 +341,11 @@ function handleTick(event) {
 		}
     }
 
+	// update enemy position
+
+
+	// update cannonball rotation and posititions
+
 	stage.update();
 }
 
@@ -224,13 +358,6 @@ function updateLoading() {
 function doneLoading(event) {
 	clearInterval(loadingInterval);
 
-	// // scorefield text
-	// scoreField = new createjs.Text("0", "bold 18px Arial", "#FFFFFF");
-	// scoreField.textAlign = "right";
-	// scoreField.x = canvas.width - 20;
-	// scoreField.y = 20;
-	// scoreField.maxWidth = 1000;
-
 	stage.removeChild(messageField);
 
 	var image = preload.getResult("pirateBattleIntro")
@@ -239,9 +366,6 @@ function doneLoading(event) {
 	overlayBitmap.scaleY = 0.5
 	overlayBitmap.x = (viewportWidth / 2) - (overlayBitmap.getTransformedBounds().width / 2)
 	overlayBitmap.y = (viewportHeight / 2) - (overlayBitmap.getTransformedBounds().height / 2)
-
-	// bitmap.scaleX = 50 / viewportHeight 
-	// bitmap.scaleY = 50 / viewportHeight 
 	stage.addChild(overlayBitmap)
 
 	// start the music
@@ -262,7 +386,8 @@ function handleClick() {
 	canvas.onclick = null;
 
 	// indicate the player is now on screen
-	createjs.Sound.play("battleMusic");
+	// TODO: uncomment below
+	// createjs.Sound.play("battleMusic");
 
 	restart();
 }
@@ -339,4 +464,12 @@ function reportWindowSize() {
 	viewportWidth = window.innerWidth;
 	console.log(window.innerHeight)
 	console.log(window.innerWidth)
+
+	if (viewportHeight < 300) {
+		console.log("viewport height too small")
+	}
+
+	if (viewportWidth < 300) {
+		console.log("viewport width too small")
+	}
 }
