@@ -1185,7 +1185,7 @@ function watchClickWin() {
 }
 
 function handleClickEnd() {
-	window.location.href = "../index.html";
+	window.location.href = "../rowToShore/rowToShore.html";
 
 }
 // ------------------------------------------------------
