@@ -24,7 +24,10 @@ var PLAYERDAMAGERADIUS = 20
 
 var INVINCIBILITYPLAYER = 50
 var COOLDOWNTIMERPLAYER = 30
-var COOLDOWNTIMERENEMY = 30
+var COOLDOWNTIMERENEMY = 90
+
+var ENEMYSTARTERHEALTH = 50
+
 
 // ----------------------------------------------
 
@@ -222,6 +225,7 @@ function restart() {
     stage.removeAllChildren();
 
     // reset game variables
+	// TODO
 	
 	// generate island locations
 	generateIslands()
@@ -407,7 +411,7 @@ function generateIslands() {
 						y: islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset,
 					})
 
-					ghostShipInfo.ghostHealth.push(100)
+					ghostShipInfo.ghostHealth.push(ENEMYSTARTERHEALTH)
 					ghostShipInfo.cooldownTimers.push(Math.random() * 10 + COOLDOWNTIMERENEMY - 10)
 					ghostShipInfo.rotationRates.push(Math.random() + 1 )
 					
@@ -662,7 +666,7 @@ function enemyDamanged(j) {
 
 // TODO: cod ethe game won screen and proceed to next screen
 function gameWon() {
-	
+	alert("game won")
 }
 
 function cannonBallUpdates() {
@@ -727,6 +731,7 @@ function cannonBallUpdates() {
 
 		// stop cannonball render
 		stage.removeChild(cannonBall.activePlayer[destroyIndex].bitmap)
+		
 
 		// remove from array
 		cannonBall.activePlayer.splice(destroyIndex, 1)
@@ -754,8 +759,8 @@ function cannonBallUpdates() {
 		}
 		
 		if (!collisionDetected) {
-			cannonBall.activePlayer[i].bitmap.x = cX
-			cannonBall.activePlayer[i].bitmap.y = cY
+			cannonBall.activeEnemy[i].bitmap.x = cX
+			cannonBall.activeEnemy[i].bitmap.y = cY
 
 			// check collision with island
 			for (let i = 0; i < islandInfo.numIslands; i++) {
@@ -792,11 +797,16 @@ function cannonBallUpdates() {
 
 	// destroy enemy cannonballs
 	numDestroy = cannonballsToDestroy.length - 1
+	console.log(cannonballsToDestroy)
+	console.log(cannonBall.activeEnemy)
 	for (let i = numDestroy; i >= 0 ; i-- ) {
 		let destroyIndex = cannonballsToDestroy[i]
 
 		// stop cannonball render
-		stage.removeChild(cannonBall.activeEnemy[destroyIndex].bitmap)
+		// if (cannonBall.activeEnemy[destroyIndex]) {
+			stage.removeChild(cannonBall.activeEnemy[destroyIndex].bitmap)
+		// }
+		
 
 		// remove from array
 		cannonBall.activeEnemy.splice(destroyIndex, 1)
@@ -810,6 +820,8 @@ function cannonBallUpdates() {
 
 function handleTick(event) {
 	if (gameState == "playing") {
+
+		// STEERING CONTROLS
 		if (lfHeld) {
 			playerSpeed.decceleration = 0.01
 			player.bitmap.rotation -= playerSpeed.rotationSpeed
@@ -840,6 +852,8 @@ function handleTick(event) {
 			playerSpeed.y += accY
 		}
 
+
+		// TIMERS
 		if (shootCooldownTimerPlayerL > 0) {
 			shootCooldownTimerPlayerL -= 2
 		}
@@ -852,6 +866,18 @@ function handleTick(event) {
 			player.invincibilityTimer -= 2
 		}
 
+		for (let k = 0; k < ghostShipInfo.numGhostShips; k++) {
+			if (ghostShipInfo.ghostHealth[k] > 0) {
+				ghostShipInfo.cooldownTimers[k] -= 2
+				
+				if (ghostShipInfo.cooldownTimers[k] <= 0) {
+					fireCannonStarboard("ghost", ghostShips[k].x, ghostShips[k].y, ghostShips[k].rotation)
+					ghostShipInfo.cooldownTimers[k] = Math.random() * 10 + COOLDOWNTIMERENEMY - 10
+				}
+			}
+		}
+
+		// SHOOTING CONTROLS
 		if (shootLeftHeld) {
 			if (shootCooldownTimerPlayerL == 0) {
 				// fire cannon ball from port
@@ -880,6 +906,11 @@ function handleTick(event) {
 		// update enemy position
 		for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
 			ghostShips[i].rotation -= ghostShipInfo.rotationRates[i]
+
+			while (ghostShips[i].rotation < 0) {
+				ghostShips[i].rotation += 360
+			}
+
 			let px = ghostShipInfo.ghostCenters[i].x + ghostShipInfo.distCenter  * Math.cos(ghostShips[i].rotation / 180 * Math.PI)
 			let py = ghostShipInfo.ghostCenters[i].y + ghostShipInfo.distCenter * Math.sin(ghostShips[i].rotation / 180 * Math.PI)
 
