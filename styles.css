@@ -1,5 +1,80 @@
 #siteName {
-    font-family: 'Pirata One', cursive;
-    text-align: center;
-    font-size: 50px;
+  font-family: "Pirata One", cursive;
+  text-align: center;
+  font-size: 50px;
+}
+
+#container {
+  display: flex;
+  justify-content: center;
+  height: 720px;
+}
+
+body {
+  background: linear-gradient(
+    rgb(235, 230, 144),
+    #bbf7ff 
+  );
+  overflow: hidden;
+}
+
+.ocean {
+  height: 5%;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: #015871;
+}
+
+.wave {
+  background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/85486/wave.svg)
+    repeat-x;
+  position: absolute;
+  top: -198px;
+  width: 6400px;
+  height: 198px;
+  animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+  transform: translate3d(0, 0, 0);
+}
+
+.wave:nth-of-type(2) {
+  top: -175px;
+  animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) -0.125s infinite,
+    swell 7s ease -1.25s infinite;
+  opacity: 1;
+}
+
+@keyframes wave {
+  0% {
+    margin-left: 0;
+  }
+  100% {
+    margin-left: -1600px;
+  }
+}
+
+@keyframes swell {
+  0%,
+  100% {
+    transform: translate3d(0, -25px, 0);
+  }
+  50% {
+    transform: translate3d(0, 5px, 0);
+  }
+}
+
+#btnStart {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: solid 1px#ffffff;
+  border-radius: 20px;
+  font-family: "Pirata One", cursive;
+  justify-content: center;
+  text-align: center;
+  font-size: 50px;
+  height: 60px;
+  width: 200px;
+  position: absolute;
+  bottom: 20%;
+  right: 15%;
 }
