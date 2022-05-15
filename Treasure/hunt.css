@@ -17,7 +17,7 @@ canvas {
    
     width:100vw; 
     background-color: #874DA1;
-    background-image:    url(/Photos/Background.png);
+    background-image:    url("Photos/Background.png");
     background-size:     contain;                      
     background-repeat:   no-repeat;
     background-position: center;
