@@ -50,7 +50,7 @@
                         okbutton.onclick = function (){
                             userAns = document.getElementById("ans").value;
                             if (userAns == sum){
-                                alert("correct! you have unlocked the treasure box!")
+                                alert("correct! you have unlocked the treasure box! Hit the 'next' button")
                                 var box = document.getElementById('treasure');
                                 box.style.visibility = "visible";
                             }
@@ -69,13 +69,16 @@
                 function checkSum(){
                     userAns = document.getElementById("ans").value;
                     if (userAns == sum){
-                        alert("correct! you have unlocked the treasure box!")
+                        alert("correct! you have unlocked the treasure box! Hit the 'next' button")
                         var box = document.getElementById('treasure');
                         box.style.visibility = "visible";
                     }
                     else {
                         alert("wrong answer. try digging another area or continue guessing.")
                     }
+                }
+                function next(){
+                    window.location.href = "../end.html";
                 }
             </script>
             <!--<span id="scroll" name="tipDiv1" style="width: 300px; height:300px;border-color: rgb(0, 102, 204); border-width: 1px; padding: 8px; border-style: ridge; display: block; position: absolute; visibility: hidden; background-color: rgb(217, 232, 247,40); left: 30vw; top: 20vh;">
@@ -93,5 +96,6 @@
             <hr>
             <p id = "instructions">
             To play, click anywhere on the empty space on the sand. Guess the correct answers to solve the puzzles and find the treasures.</p>
+            <button type="button" class="btn btn-primary" onclick="next()" style="width:200px; float: right;">Next</button>
 	</body>
 </html>
