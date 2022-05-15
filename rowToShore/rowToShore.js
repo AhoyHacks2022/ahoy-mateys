@@ -141,7 +141,7 @@ function buttonPressed() {
 
     if (lives < 1) {
         // end game
-        alert("Game Over! Score: " + score + " Lives: " + lives);
+        alert("Game Over!\nScore: " + score + " Lives: " + lives);
     }
     
     // To display score and lives count in box
