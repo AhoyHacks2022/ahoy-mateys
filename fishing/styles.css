@@ -41,9 +41,7 @@ body {
   background-image: -ms-linear-gradient(top, #00c5d9, #066a9b);
   background-image: -o-linear-gradient(top, #00c5d9, #066a9b);
   background-image: linear-gradient(top, #00c5d9, #066a9b);
-  height: 100vh; 
-	margin: 0;
-	padding: 0;
+  margin: 0;
   height: 100vh;
 }
 
@@ -54,7 +52,7 @@ body {
   align-items: center;
   position: absolute;
   text-align: center;
-  height: 85vh;
+  height: 100vh;
   width: 100vw;
   /*   background-image: -webkit-linear-gradient(top, #57bcc7, #14445e);
   background-image: -moz-linear-gradient(top, #57bcc7, #14445e);
@@ -66,7 +64,7 @@ body {
 #click-container {
   display: none;
   position: fixed;
-  height: 85vh;
+  height: 100vh;
   width: 100vw;
   cursor: none;
 }
