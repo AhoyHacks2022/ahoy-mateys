@@ -254,12 +254,12 @@ window.onload = function () {
   }
 
   function showMap() {
-    gameContainer.innerHTML = `<img id="map" src="images/map.svg"><div id="btnNext">Next</div>`;
-    document.getElementById("map").addEventListener("click", () => {
+    gameContainer.innerHTML = `<img id="treasure" src="images/treasuremap.svg"><div id="btnNext">Next</div>`;
+    document.getElementById("treasuremap").addEventListener("click", () => {
       crinkle.play();
     });
     document.getElementById("btnNext").addEventListener("click", () => {
-      window.location.replace('../index.html') // TODO: needs to be replaced with amelia's file path
+      window.location.replace('../MapNav/mapNav1.html');
     });
   }
 
@@ -274,8 +274,8 @@ window.onload = function () {
 
   // pull the map out of the fish's mouth
   function showFishMouth() {
-    instructions.innerHTML = `<div><h2>This fish looks a bit weird... Pull the map out of its mouth! </h2><img id="map-fish" src="images/fishmap.svg"></div>`;
-    document.getElementById("map-fish").addEventListener("drag", () => {
+    instructions.innerHTML = `<div><h2>This fish looks a bit weird... Pull the map out of its mouth! </h2><img id="map-fish" src="images/map-fish.svg"></div>`;
+    document.getElementById("map-fish").addEventListener("mousedown", () => {
       bottlePop.play();
       showMap();
     });
@@ -310,5 +310,5 @@ window.onload = function () {
   generateBubble();
   var bubbleInterval = setInterval(generateBubble, 500);
 
-  instructions.innerHTML = `<p>Catch as many fishes as you can!</p><p>Don't worry about catching some bottles, there will be a fun surprise if you catch some...</p>`;
+  instructions.innerHTML = `<p>Catch as many fishes as you can for the hungry pirates!</p><p>Don't worry about catching some bottles, there will be a fun surprise if you catch some...</p>`;
 };
