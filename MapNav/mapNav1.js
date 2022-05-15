@@ -22,6 +22,7 @@ var GHOSTSHIPCOLLISIONRADIUS = 20
 var GHOSTDAMAGERADIUS = 25
 var PLAYERDAMAGERADIUS = 20
 
+var INVINCIBILITYPLAYER = 50
 var COOLDOWNTIMERPLAYER = 30
 var COOLDOWNTIMERENEMY = 30
 
@@ -71,6 +72,7 @@ var ghostShipInfo = {
 	ghostCenters: [],
 	ghostHealth: [],
 	cooldownTimers: [],
+	rotationRates: [],
 	rotationRate: 1.5,
 	distCenter: 100,
 	centerOffset: 20,
@@ -406,6 +408,8 @@ function generateIslands() {
 					})
 
 					ghostShipInfo.ghostHealth.push(100)
+					ghostShipInfo.cooldownTimers.push(Math.random() * 10 + COOLDOWNTIMERENEMY - 10)
+					ghostShipInfo.rotationRates.push(Math.random() + 1 )
 					
 				}
 
@@ -476,18 +480,28 @@ function keepPlayerInBounds() {
 
 // TODO: code player health decrease 
 function playerDamaged() {
+
 	// check invincibiliity timer
-	
+	if (player.invincibilityTimer == 0) {
 
-	// set damage invincibility timer
+		// set damage invincibility timer
+		player.invincibilityTimer = INVINCIBILITYPLAYER
 
-	// decrease player healthby 1
+		// decrease player health by 10
+		player.health -= 10
 
+		healthField.text = "Health: " + String(player.health) + " / 200"
+		stage.update();
+
+		if (player.health <= 0) {
+			gameover()
+		}
+	}
 }
 
 // TODO: game over condition
 function gameover() {
-
+	alert("game over")
 }
 
 
@@ -525,6 +539,8 @@ function playerEnemyCollisionCheck() {
 
 			playerSpeed.x = 0
 			playerSpeed.y = 0
+
+			playerDamaged()
 
 		}
 	}
@@ -628,14 +644,25 @@ function fireCannonStarboard(shooter, x=0, y=0, rotation=0) {
 function enemyDamanged(j) {
 	// reduce enemy health points
 	ghostShipInfo.ghostHealth[j] -=  10
+	console.log(j, ghostShipInfo.ghostHealth[j])
 
 	if (ghostShipInfo.ghostHealth[j] <= 0) {
 		// despawn the enemy
-
+		stage.removeChild(ghostShips[j])
+		
 		// reduce enemy count
+		ghostShipInfo.numGhostShips -= 1
 
 		// check if win (no enemy left)
+		if (ghostShipInfo.numGhostShips == 0) {
+			gameWon()
+		}
 	}
+}
+
+// TODO: cod ethe game won screen and proceed to next screen
+function gameWon() {
+	
 }
 
 function cannonBallUpdates() {
@@ -682,7 +709,7 @@ function cannonBallUpdates() {
 					cX + cannonBall.width / 2, 
 					cY + cannonBall.width / 2)
 
-				if (calc.distance < DAMGHOSTSHIPCOLLISIONRADIUS) {
+				if (calc.distance < GHOSTDAMAGERADIUS) {
 					console.log("landed a hit!")
 					// destroy cannonball
 					cannonballsToDestroy.push(i)
@@ -809,7 +836,6 @@ function handleTick(event) {
 			let accX = calcXfromEuclidean(player.bitmap.rotation, playerSpeed.acceleration)
 			let accY = calcYfromEuclidean(player.bitmap.rotation, playerSpeed.acceleration)
 
-			console.log(accX)
 			playerSpeed.x += accX
 			playerSpeed.y += accY
 		}
@@ -820,6 +846,10 @@ function handleTick(event) {
 
 		if (shootCooldownTimerPlayerR > 0) {
 			shootCooldownTimerPlayerR -= 2
+		}
+
+		if (player.invincibilityTimer > 0) {
+			player.invincibilityTimer -= 2
 		}
 
 		if (shootLeftHeld) {
@@ -849,7 +879,7 @@ function handleTick(event) {
 
 		// update enemy position
 		for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
-			ghostShips[i].rotation -= ghostShipInfo.rotationRate
+			ghostShips[i].rotation -= ghostShipInfo.rotationRates[i]
 			let px = ghostShipInfo.ghostCenters[i].x + ghostShipInfo.distCenter  * Math.cos(ghostShips[i].rotation / 180 * Math.PI)
 			let py = ghostShipInfo.ghostCenters[i].y + ghostShipInfo.distCenter * Math.sin(ghostShips[i].rotation / 180 * Math.PI)
 
