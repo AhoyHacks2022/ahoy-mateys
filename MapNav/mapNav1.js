@@ -41,6 +41,7 @@ var player = {
     width: 40,
     height: 40,
 	rotation: 90,
+	health: 100,
 	bitmap: null,
 }; // The player character
 
@@ -92,11 +93,16 @@ var playerSpeed = {
 
 }
 
+var cannonBall = {
+	rotation: 5,
+	speed: 10
+}
+
 // optional health and ammo to implement
 var playerAmmo = 100;
 var playerHealth = 100;
 
-var cannonBallRotation = 5;
+var shipCollisionDamageTicker
 
 var loadingInterval = 0;
 
@@ -384,6 +390,8 @@ function generateIslands() {
 						x: islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset,
 						y: islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset,
 					})
+
+					ghostShipInfo.ghostHealth.push(100)
 					
 				}
 
@@ -465,7 +473,7 @@ function keepPlayerOffIslands() {
 			player.bitmap.x = islandInfo.islandCenters[i].x + calcXfromEuclidean(calc.angle, ISLANDCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
 			player.bitmap.y = islandInfo.islandCenters[i].y - calcYfromEuclidean(calc.angle, ISLANDCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
 
-			console.log(calc)
+			// console.log(calc)
 
 			playerSpeed.x = 0
 			playerSpeed.y = 0
@@ -474,7 +482,24 @@ function keepPlayerOffIslands() {
 }
 
 function playerEnemyCollisionCheck() {
+	for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
+		let calc = calc2points(ghostShips[i].x, ghostShips[i].y,
+			player.bitmap.x, player.bitmap.y
+			)
+		// console.log(ghostShips)
+		if (calc.distance < GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS) {
+			
+			// move the ship away from the island on the tangent
+			player.bitmap.x = ghostShips[i].x + calcXfromEuclidean(calc.angle, GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
+			player.bitmap.y = ghostShips[i].y - calcYfromEuclidean(calc.angle, GHOSTSHIPCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
 
+			playerSpeed.x = 0
+			playerSpeed.y = 0
+
+			// console.log("GHOST")
+
+		}
+	}
 }
 
 function cannonBallCollisionCheck() {
@@ -512,7 +537,6 @@ function handleTick(event) {
 			console.log(accX)
 			playerSpeed.x += accX
 			playerSpeed.y += accY
-			
 		}
 
 		if (shootLeftHeld) {
@@ -552,6 +576,10 @@ function handleTick(event) {
 	stage.update();
 }
 
+
+// ------------------------------------------------------
+// LOADING SCREEN ELEMENTS
+
 // Loading screen update functions
 function updateLoading() {
 	messageField.text = "Loading " + (preload.progress * 100 | 0) + "%";
@@ -578,6 +606,9 @@ function doneLoading(event) {
 	watchRestart();
 }
 
+// ------------------------------------------------------
+// TRIGGER RESTART
+
 function watchRestart() {
 	//watch for clicks
 	stage.update(); 	//update the stage to show text
@@ -594,6 +625,9 @@ function handleClick() {
 
 	restart();
 }
+
+// ------------------------------------------------------
+// HANDLE KEYPRESSES
 
 //allow for WASD and arrow control scheme
 function handleKeyDown(e) {
@@ -675,6 +709,8 @@ function handleKeyUp(e) {
     console.log(e.keyCode)
 }
 
+// ------------------------------------------------------
+
 
 // resize the window
 function reportWindowSize() {
@@ -693,8 +729,7 @@ function reportWindowSize() {
 }
 
 // ------------------------------------------------------
-// Collision manamgement
-
+// COLLISION MANAGEMENT
 
 
 // // function to check for intersection between line segments
