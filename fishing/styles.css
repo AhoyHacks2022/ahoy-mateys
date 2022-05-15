@@ -17,7 +17,7 @@ h1#siteName {
   width: 200px;
   position: absolute;
   bottom: 5%;
-  right: 5%
+  right: 5%;
 }
 
 #info-wrapper {
@@ -31,19 +31,20 @@ h1#siteName {
 }
 
 div#instructions {
-    font-size: 25px;
-    font-family: 'Satisfy', cursive;
+  font-size: 25px;
+  font-family: "Satisfy", cursive;
 }
 
 body {
-	background-image: -webkit-linear-gradient(top, #00C5D9, #066A9B);
-	background-image: -moz-linear-gradient(top, #00C5D9, #066A9B);
-	background-image: -ms-linear-gradient(top, #00C5D9, #066A9B);
-	background-image: -o-linear-gradient(top, #00C5D9, #066A9B);
-	background-image: linear-gradient(top, #00C5D9, #066A9B);
-	font-size: 21px;
+  background-image: -webkit-linear-gradient(top, #00c5d9, #066a9b);
+  background-image: -moz-linear-gradient(top, #00c5d9, #066a9b);
+  background-image: -ms-linear-gradient(top, #00c5d9, #066a9b);
+  background-image: -o-linear-gradient(top, #00c5d9, #066a9b);
+  background-image: linear-gradient(top, #00c5d9, #066a9b);
+  height: 100vh; 
+	margin: 0;
+	padding: 0;
   height: 100vh;
-	color: white;
 }
 
 #game-container {
@@ -55,20 +56,20 @@ body {
   text-align: center;
   height: 85vh;
   width: 100vw;
-/*   background-image: -webkit-linear-gradient(top, #57bcc7, #14445e);
+  /*   background-image: -webkit-linear-gradient(top, #57bcc7, #14445e);
   background-image: -moz-linear-gradient(top, #57bcc7, #14445e);
   background-image: -ms-linear-gradient(top, #57bcc7, #14445e);
   background-image: -o-linear-gradient(top, #57bcc7, #14445e);
   background-image: linear-gradient(top, #57bcc7, #14445e); */
 }
 
- #click-container {
+#click-container {
   display: none;
   position: fixed;
   height: 85vh;
   width: 100vw;
   cursor: none;
-} 
+}
 
 #game-stats {
   font-size: 24px;
@@ -123,7 +124,7 @@ button#start-btn {
   border: 4px solid white;
   border-radius: 50%;
   cursor: pointer;
-} 
+}
 
 button#start-btn .arrow {
   display: block;
@@ -135,7 +136,7 @@ button#start-btn .arrow {
 .fish {
   width: 250px;
   height: 250px;
-  background-image:url(images/fish.svg);
+  background-image: url(images/fish.svg);
   transition: left 0.1s linear, top 0.1s linear, opacity 1s linear;
   background-size: contain;
   background-repeat: no-repeat;
@@ -164,17 +165,17 @@ button#start-btn .arrow {
 }
 
 .bottle {
-	width: 130px;
-	height: 140px;
-	background-image:url(images/bottle.svg);
-	background-size: contain;
-	background-repeat: no-repeat;
-    position: absolute;
-    transition: all 1s;
-    transform: rotate(-90deg);
-	animation-name: float;
-	animation-duration: 1s;
-	animation-timing-function: linear;
+  width: 130px;
+  height: 140px;
+  background-image: url(images/bottle.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: absolute;
+  transition: all 1s;
+  transform: rotate(-90deg);
+  animation-name: float;
+  animation-duration: 1s;
+  animation-timing-function: linear;
 }
 
 @keyframes appear {
