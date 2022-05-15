@@ -16,6 +16,12 @@ var VIEWPORTSCALE = 2
 var OBJECTSCALE = VIEWPORTSCALE * 2
 
 var SQRIMGHEIGHT = 1080
+
+var ISLANDCOLLISIONRADIUS = 30
+var GHOSTSHIPCOLLISIONRADIUS = 20
+var GHOSTDAMAGERADIUS = 25
+var PLAYERDAMAGERADIUS = 20
+
 // ----------------------------------------------
 
 // Define variables
@@ -38,6 +44,7 @@ var player = {
 	bitmap: null,
 }; // The player character
 
+// Bitmaps
 var waves = []
 var currents = []
 var balls = []
@@ -52,6 +59,7 @@ var islandInfo = {
 	yTiles: 5,
 	islandWidth: 60,
 	islandLocations: [],
+	islandCenters: [],
 	border: 100,
 	numIslands: 0,
 }
@@ -61,9 +69,10 @@ var ghostShipInfo = {
 	numGhostShips: 0,
 	ghostLocations: [],
 	ghostCenters: [],
+	ghostHealth: [],
 	rotationRate: 1.5,
 	distCenter: 100,
-	centerOffset: 30,
+	centerOffset: 20,
 }
 
 var messageField;		//Message display field
@@ -79,7 +88,7 @@ var playerSpeed = {
 	rotationSpeed: 2,
 	acceleration: 0.05,
 	decceleration: 0.005,
-	maxSpeed: 10,
+	maxSpeed: 4,
 
 }
 
@@ -227,8 +236,6 @@ function restart() {
 	
 	player.bitmap = bitmap
 	stage.addChild(player.bitmap)
-	// bitmap.scaleX = 50 / viewportHeight 
-	// bitmap.scaleY = 50 / viewportHeight 
 
 	gameState = "playing"
 
@@ -342,6 +349,11 @@ function generateIslands() {
 				bitmap.scaleX = islandInfo.islandWidth / viewportHeight 
 				bitmap.scaleY = islandInfo.islandWidth / viewportHeight 
 
+				islandInfo.islandCenters.push({
+					x: islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset,
+					y: islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset,
+				})
+
 				bitmap.x = islandInfo.border + i * islandInfo.distBtwn
 				bitmap.y = islandInfo.border + j * islandInfo.distBtwn
 
@@ -369,8 +381,8 @@ function generateIslands() {
 					countedGhosts++
 
 					ghostShipInfo.ghostCenters.push({
-						x: islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2,
-						y: islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2,
+						x: islandInfo.border + i * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset,
+						y: islandInfo.border + j * islandInfo.distBtwn + islandInfo.islandWidth / 2 + ghostShipInfo.centerOffset,
 					})
 					
 				}
@@ -380,139 +392,137 @@ function generateIslands() {
 	}
 
 	console.log(ghostShipInfo.ghostCenters)
+	console.log(islandInfo.islandCenters)
 
 	islandInfo.islandLocations = islandArray
 	ghostShipInfo.ghostLocations = ghostArray
 }
 
-function calcXfromEuclidean(rotation, euclidean) {
-	if (rotation == 0 || rotation == 180) {
-		return 0
-	} 
 
-	if (rotation == 90 || rotation == 270) {
-		return euclidean
-	}
-	
-	if (rotation > 0 && rotation < 90) {
-		return Math.cos((90-rotation)/180 * Math.PI) * euclidean
+function playerSpeedUpdate() { 
+
+	if (playerSpeed.x > playerSpeed.decceleration) {
+		playerSpeed.x -= playerSpeed.decceleration
+	} else if (playerSpeed.x < - playerSpeed.decceleration) {
+		playerSpeed.x += playerSpeed.decceleration
+	} else {
+		playerSpeed.x = 0
 	}
 
-	if (rotation > 90 && rotation < 180) {
-		return Math.cos((rotation - 90)/180 * Math.PI) * euclidean
+	if (playerSpeed.x > playerSpeed.maxSpeed) {
+		playerSpeed.x = playerSpeed.maxSpeed
+	} else if (playerSpeed.x < - playerSpeed.maxSpeed) {
+		playerSpeed.x = - playerSpeed.maxSpeed
 	}
 
-	if (rotation > 180 && rotation < 270) {
-		return - Math.cos((270 - rotation)/180 * Math.PI) * euclidean
+	if (playerSpeed.y > playerSpeed.decceleration) {
+		playerSpeed.y -= playerSpeed.decceleration
+	} else if (playerSpeed.y < - playerSpeed.decceleration) {
+		playerSpeed.y += playerSpeed.decceleration
+	} else {
+		playerSpeed.y = 0
 	}
 
-	if (rotation > 270) {
-		return - Math.cos((rotation - 270)/180 * Math.PI) * euclidean
+	if (playerSpeed.y > playerSpeed.maxSpeed) {
+		playerSpeed.y = playerSpeed.maxSpeed
+	} else if (playerSpeed.y < - playerSpeed.maxSpeed) {
+		playerSpeed.y = - playerSpeed.maxSpeed
 	}
 
-	return 0
+	player.bitmap.x += playerSpeed.x
+	player.bitmap.y += playerSpeed.y
 }
 
-function calcYfromEuclidean(rotation, euclidean) {
-	if (rotation == 0 || rotation == 180) {
-		return euclidean
+function keepPlayerInBounds() {
+	if (player.bitmap.y > viewportHeight - player.height * 1.5 ) {
+		player.bitmap.y = viewportHeight - player.height * 1.5 
+		playerSpeed.y = - 0.005
+	}
+	if (player.bitmap.y < player.height ) {
+		player.bitmap.y = player.height 
+		playerSpeed.y = 0.005
+	}
+	if (player.bitmap.x > viewportWidth - player.width * 1.5 ) {
+		player.bitmap.x = viewportWidth - player.width * 1.5 
+		playerSpeed.x = - 0.005
 	} 
-
-	if (rotation == 90 || rotation == 270) {
-		return 0
+	if (player.bitmap.x < player.width ) {
+		player.bitmap.x = player.width
+		playerSpeed.x = 0.005
 	}
-	
-	if (rotation > 0 && rotation < 90) {
-		return - Math.sin((90-rotation)/180 * Math.PI) * euclidean
-	}
-
-	if (rotation > 90 && rotation < 180) {
-		return Math.sin((rotation - 90)/180 * Math.PI) * euclidean
-	}
-
-	if (rotation > 180 && rotation < 270) {
-		return Math.sin((270 - rotation)/180 * Math.PI) * euclidean
-	}
-
-	if (rotation > 270) {
-		return - Math.sin((rotation - 270)/180 * Math.PI) * euclidean
-	} 
-
-	return 0
 }
 
-// TODO: implement max speed function
 
+function keepPlayerOffIslands() {
+	for (let i = 0; i < islandInfo.numIslands; i++) {
+		let calc = calc2points(islandInfo.islandCenters[i].x, islandInfo.islandCenters[i].y,
+			player.bitmap.x, player.bitmap.y
+			)
+
+		if (calc.distance < ISLANDCOLLISIONRADIUS + PLAYERDAMAGERADIUS) {
+			
+			// move the ship away from the island on the tangent
+			player.bitmap.x = islandInfo.islandCenters[i].x + calcXfromEuclidean(calc.angle, ISLANDCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
+			player.bitmap.y = islandInfo.islandCenters[i].y - calcYfromEuclidean(calc.angle, ISLANDCOLLISIONRADIUS + PLAYERDAMAGERADIUS + 5)
+
+			console.log(calc)
+
+			playerSpeed.x = 0
+			playerSpeed.y = 0
+		}
+	}
+}
+
+function playerEnemyCollisionCheck() {
+
+}
+
+function cannonBallCollisionCheck() {
+
+}
 
 function handleTick(event) {
 	if (gameState == "playing") {
 		if (lfHeld) {
+			playerSpeed.decceleration = 0.01
 			player.bitmap.rotation -= playerSpeed.rotationSpeed
+		} else {
+			playerSpeed.decceleration = 0.005
 		}
 		
 		if (rtHeld) {
+			playerSpeed.decceleration = 0.010
 			player.bitmap.rotation += playerSpeed.rotationSpeed
+		} else {
+			playerSpeed.decceleration = 0.005
 		}
 		
 		if (fwdHeld) {
 			let accX = calcXfromEuclidean(player.bitmap.rotation, playerSpeed.acceleration)
 			let accY = calcYfromEuclidean(player.bitmap.rotation, playerSpeed.acceleration)
 
+			console.log(accX)
 			playerSpeed.x += accX
 			playerSpeed.y += accY
 			
 		}
 
-		console.log(playerSpeed.x)
-		
-		if (shootHeld) {
+		if (shootLeftHeld) {
 			
 		}
 
-		if (playerSpeed.x > playerSpeed.decceleration) {
-			playerSpeed.x -= playerSpeed.decceleration
-		} else if (playerSpeed.x < - playerSpeed.decceleration) {
-			playerSpeed.x += playerSpeed.decceleration
-		} else {
-			playerSpeed.x = 0
+		if (shootRightHeld) {
+			
 		}
 
-		if (playerSpeed.x > playerSpeed.maxSpeed) {
-			playerSpeed.x = playerSpeed.maxSpeed
-		} else if (playerSpeed.x < - playerSpeed.maxSpeed) {
-			playerSpeed.x = -playerSpeed.maxSpeed
-		}
-
-		if (playerSpeed.y > playerSpeed.decceleration) {
-			playerSpeed.y -= playerSpeed.decceleration
-		} else if (playerSpeed.y < - playerSpeed.decceleration) {
-			playerSpeed.y += playerSpeed.decceleration
-		} else {
-			playerSpeed.y = 0
-		}
-
-		player.bitmap.x += playerSpeed.x
-		player.bitmap.y += playerSpeed.y
+		// update player speed
+		playerSpeedUpdate()
 
 		// keep player in bounds
-		if (player.bitmap.y > viewportHeight - player.height * 1.5 ) {
-		    player.bitmap.y = viewportHeight - player.height * 1.5 
-			playerSpeed.y = 0
-		}
-		if (player.bitmap.y < player.height ) {
-		    player.bitmap.y = player.height 
-			playerSpeed.y = 0
-		}
-		if (player.bitmap.x > viewportWidth - player.width * 1.5 ) {
-		    player.bitmap.x = viewportWidth - player.width * 1.5 
-			playerSpeed.x = 0
-		} 
-		if (player.bitmap.x < player.width ) {
-		    player.bitmap.x = player.width
-			playerSpeed.x = 0
-		}
+		keepPlayerInBounds()
 		
-		
+		keepPlayerOffIslands()
+
 		// update enemy position
 		for (let i = 0; i < ghostShipInfo.numGhostShips; i++) {
 			ghostShips[i].rotation -= ghostShipInfo.rotationRate
@@ -523,7 +533,12 @@ function handleTick(event) {
 			ghostShips[i].y = py
 		}
 
+		// check player collision with enemy
+		playerEnemyCollisionCheck()
+
 		// update cannonball rotation and posititions
+		cannonBallCollisionCheck()
+
 	}
 
 	stage.update();
@@ -579,9 +594,17 @@ function handleKeyDown(e) {
 		var e = window.event;
 	}
 	switch (e.keyCode) {
-		case KEYCODE_SPACE:
-			shootHeld = true;
+		// case KEYCODE_SPACE:
+		// 	shootHeld = true;
+		// 	return false;
+
+		case KEYCODE_O:
+			shootLeftHeld = true;
 			return false;
+		case KEYCODE_P:
+			shootRightHeld = true;
+			return false;
+		
 		case KEYCODE_A:
 		case KEYCODE_LEFT:
 			lfHeld = true;
@@ -659,4 +682,96 @@ function reportWindowSize() {
 	if (viewportWidth < 300) {
 		console.log("viewport width too small")
 	}
+}
+
+// ------------------------------------------------------
+// Collision manamgement
+
+
+
+// // function to check for intersection between line segments
+// // https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
+// function intersects(a,b,c,d,p,q,r,s) {
+//     var det, gamma, lambda;
+//     det = (c - a) * (s - q) - (r - p) * (d - b);
+//     if (det === 0) {
+//         return false;
+//     } else {
+//         lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+//         gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+//         return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+//     }
+// };
+
+
+function calc2points(x1, y1, x2, y2) {
+	angle = 270 - (Math.atan2(y1 - y2, x1 - x2) * 180 / Math.PI)
+	if (angle == 360) {
+		angle = 0
+	}
+
+	let calc = {
+		distance: Math.sqrt( Math.pow((x1-x2), 2) + Math.pow((y1-y2), 2) ),
+		angle: angle
+	}
+
+	return calc
+}
+
+function calcXfromEuclidean(rotation, euclidean) {
+	if (rotation == 0 || rotation == 180) {
+		return 0
+	} 
+
+	if (rotation == 90 || rotation == 270) {
+		return euclidean
+	}
+	
+	if (rotation > 0 && rotation < 90) {
+		return Math.cos((90-rotation)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 90 && rotation < 180) {
+		return Math.cos((rotation - 90)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 180 && rotation < 270) {
+		return - Math.cos((270 - rotation)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 270) {
+		return - Math.cos((rotation - 270)/180 * Math.PI) * euclidean
+	}
+
+	return 0
+}
+
+function calcYfromEuclidean(rotation, euclidean) {
+	if (rotation == 0 || rotation == 180) {
+		return euclidean
+	} 
+
+	if (rotation == 90 || rotation == 270) {
+		return 0
+	}
+	
+	if (rotation > 0 && rotation < 90) {
+		return - Math.sin((90-rotation)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 90 && rotation < 180) {
+		return Math.sin((rotation - 90)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 180 && rotation < 270) {
+		return Math.sin((270 - rotation)/180 * Math.PI) * euclidean
+	}
+
+	if (rotation > 270) {
+		return - Math.sin((rotation - 270)/180 * Math.PI) * euclidean
+	} 
+
+	console.log("Error" + String(rotation) + "," + String(euclidean))
+
+	return 0
 }
