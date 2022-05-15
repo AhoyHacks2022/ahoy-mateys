@@ -259,7 +259,6 @@ window.onload = function () {
       crinkle.play();
     });
     document.getElementById("btnNext").addEventListener("click", () => {
-      console.log("clicked");
       window.location.replace('../MapNav/mapNav1.html');
     });
   }

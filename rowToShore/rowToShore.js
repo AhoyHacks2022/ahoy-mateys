@@ -1,6 +1,9 @@
 /* 
  * Rowing to shore (in the smaller boat)
  * Avoiding rocks and other obstacles
+ * 
+ * 1 point added for each successful move
+ * 1 live deducted for collision with stone
  */
 
 var score = 0;
@@ -28,6 +31,7 @@ var runStone7 = 0;
 var runStone8 = 0;
 
 function buttonPressed() {
+    // Check which stone to run
     if (runStone0 == 1) {
         stone0.style.left = (parseInt(stone0.style.left) - 100) + "px";
     } else if (runStone1 == 1) {
@@ -59,12 +63,14 @@ function buttonPressed() {
     let stone7Left = parseInt(window.getComputedStyle(stone7).getPropertyValue("left"));
     let stone8Left = parseInt(window.getComputedStyle(stone8).getPropertyValue("left"));
 
+    // Do now allow ship to exit box
     if (shipTop < 0) {
         ship.style.top = 0 + "px";
     } else if (shipTop > 580) {
         ship.style.top = 580 + "px";
     }
     
+    // Check whether to deduct lives or add score
     if (runStone0 == 1 && shipTop <= 80 && stone0Left <= 60 && stone0Left >= -80) {
         lives--;
     } else if (runStone1 == 1 && shipTop >= 10 && shipTop <= 150 && stone1Left <= 60 && stone1Left >= -80) {
@@ -87,6 +93,7 @@ function buttonPressed() {
         score++;
     }
 
+    // Decide on stone to activate
     if (stone0Left < -80) {
         runStone0 = 0;
         runStone1 = 1;
@@ -127,32 +134,36 @@ function buttonPressed() {
         runStone8 = 1;
     }
 
+    if (lives < 1) {
+        // end game
+        alert("Game Over!\nScore: " + score + " Lives: " + lives);
+    }
+
     if (stone8Left < -80) {
         // win game
         alert("Congradulations!\nYou have managed to successfully avoided the stones and navigated to the island!\nScore: " + score + " Lives: " + lives);
     }
 
-    if (lives < 1) {
-        // end game
-        alert("Game Over! Score: " + score + " Lives: " + lives);
-    }
-    
+    // To display score and lives count in box
     document.getElementById("scoreSpan").innerHTML = score;
     document.getElementById("livesSpan").innerHTML = lives;
 }
 
+// If up button is pressed
 function upPressed() {
     ship.style.top = (parseInt(ship.style.top) - 30) + "px";
 
     buttonPressed();
 }
 
+// If down button is pressed
 function downPressed() {
     ship.style.top = (parseInt(ship.style.top) + 30) + "px";
 
     buttonPressed();
 }
 
+// If reset button is pressed
 function reset() {
     lives = 3;
     score = 0;
