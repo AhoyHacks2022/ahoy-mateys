@@ -46,6 +46,7 @@ var player = {
     height: 40,
 	rotation: 90,
 	health: 200,
+	invincibilityTimer: 0,
 	// ammo: 100,
 	bitmap: null,
 }; 
@@ -476,6 +477,7 @@ function keepPlayerInBounds() {
 // TODO: code player health decrease 
 function playerDamaged() {
 	// check invincibiliity timer
+	
 
 	// set damage invincibility timer
 
@@ -622,6 +624,7 @@ function fireCannonStarboard(shooter, x=0, y=0, rotation=0) {
 }
 
 
+// TODO: define enemy damaged function
 function enemyDamanged(j) {
 	// reduce enemy health points
 	ghostShipInfo.ghostHealth[j] -=  10
@@ -641,6 +644,8 @@ function cannonBallUpdates() {
 	// for each of the cannnon balls in the player array
 	for (let i = 0; i < cannonBall.numPlayer; i++) {
 
+		let collisionDetected = false
+
 		// update cannonball collision
 		let cX = cannonBall.activePlayer[i].bitmap.x + cannonBall.activePlayer[i].direction.x
 		let cY = cannonBall.activePlayer[i].bitmap.y + cannonBall.activePlayer[i].direction.y
@@ -649,69 +654,129 @@ function cannonBallUpdates() {
 		if (cX < 0 || cY < 0 || cX > viewportWidth || cY > viewportHeight) {
 			// destroy cannonball
 			cannonballsToDestroy.push(i)
-			continue
+			collisionDetected = true
 		}
 
-		cannonBall.activePlayer[i].bitmap.x = cX
-		cannonBall.activePlayer[i].bitmap.y = cY
+		if (!collisionDetected) {
+			cannonBall.activePlayer[i].bitmap.x = cX
+			cannonBall.activePlayer[i].bitmap.y = cY
 
-		// check if collision with land
-		if (cX > islandInfo.border && cX < viewportWidth - islandInfo.border) {
-			if (cY > islandInfo.border && cY < viewportHeight - islandInfo.border) {
-				// check which grid space
-				let gridX = Math.floor((cX - islandInfo.border) / islandInfo.distBtwn)
-				let gridY = Math.floor((cY - islandInfo.border) / islandInfo.distBtwn)
-
-				// check if that grid has an island
-				if (gridX < islandInfo.xTiles && gridY < islandInfo.yTiles) {
-					if (islandInfo.islandLocations[gridY][gridX] == 1) {
-						// check if in radius of the island touches the orb
-						let calc = calc2points(islandInfo.islandCenters[gridX].x, islandInfo.islandCenters[gridY].y, 
-							cX + cannonBall.width / 2, 
-							cY + cannonBall.width / 2)
-
-						if (calc.distance < ISLANDCOLLISIONRADIUS) {
-							// destroy cannonball
-							cannonballsToDestroy.push(i)
-							continue;
-						}
-					}
+			for (let i = 0; i < islandInfo.numIslands; i++) {
+				let calc = calc2points(islandInfo.islandCenters[i].x, islandInfo.islandCenters[i].y,
+					cX + cannonBall.width / 2, cY + cannonBall.width / 2)
+	
+				if (calc.distance < ISLANDCOLLISIONRADIUS) {
+					// destroy cannonball
+					cannonballsToDestroy.push(i)
+	
+					console.log("you hit land genius :P")
+					collisionDetected = true
 				}
 			}
 		}
+		
+		if (!collisionDetected) {
+			//  check if collision with enemy
+			for (let j = 0; j < ghostShipInfo.numGhostShips; j++) {
+				let calc = calc2points(ghostShips[j].x, ghostShips[j].y, 
+					cX + cannonBall.width / 2, 
+					cY + cannonBall.width / 2)
 
-		//  check if collision with enemy
-		for (let j = 0; j < ghostShipInfo.numGhostShips; j++) {
-			let calc = calc2points(ghostShips[j].x, ghostShips[j].y, 
-				cX + cannonBall.width / 2, 
-				cY + cannonBall.width / 2)
+				if (calc.distance < DAMGHOSTSHIPCOLLISIONRADIUS) {
+					console.log("landed a hit!")
+					// destroy cannonball
+					cannonballsToDestroy.push(i)
 
-			if (calc.distance < ISLANDCOLLISIONRADIUS) {
-				console.log("landed a hit!")
-				// destroy cannonball
-				cannonballsToDestroy.push(i)
-
-				enemyDamanged(j);
+					enemyDamanged(j);
+				}
 			}
 		}
 	}
 
 	// destroy player cannon balls
-	for (let i = 0; i < cannonballsToDestroy.length; i++ ) {
+	let numDestroy = cannonballsToDestroy.length - 1
+	for (let i = numDestroy; i >= 0 ; i-- ) {
+		let destroyIndex = cannonballsToDestroy[i]
+
+		// stop cannonball render
+		stage.removeChild(cannonBall.activePlayer[destroyIndex].bitmap)
+
+		// remove from array
+		cannonBall.activePlayer.splice(destroyIndex, 1)
+		cannonBall.numPlayer -= 1
 
 	}
 
 	cannonballsToDestroy = []
 
-	// for each of the cannon balls in the enemy array
-	 
 
+	// for each of the cannon balls in the enemy array
+	for (let i = 0; i < cannonBall.numEnemy; i++) {
+
+		let collisionDetected = false
+
+		// update cannonball collision
+		let cX = cannonBall.activeEnemy[i].bitmap.x + cannonBall.activeEnemy[i].direction.x
+		let cY = cannonBall.activeEnemy[i].bitmap.y + cannonBall.activeEnemy[i].direction.y
+
+		// check if cannonball is still on map
+		if (cX < 0 || cY < 0 || cX > viewportWidth || cY > viewportHeight) {
+			// destroy cannonball
+			cannonballsToDestroy.push(i)
+			collisionDetected = true
+		}
+		
+		if (!collisionDetected) {
+			cannonBall.activePlayer[i].bitmap.x = cX
+			cannonBall.activePlayer[i].bitmap.y = cY
+
+			// check collision with island
+			for (let i = 0; i < islandInfo.numIslands; i++) {
+				let calc = calc2points(islandInfo.islandCenters[i].x, islandInfo.islandCenters[i].y,
+					cX + cannonBall.width / 2, cY + cannonBall.width / 2)
+	
+				if (calc.distance < ISLANDCOLLISIONRADIUS) {
+					// destroy cannonball
+					cannonballsToDestroy.push(i)
+	
+					console.log("you hit land genius :P")
+					collisionDetected = true
+
+				}
+			}
+		}
+		
+		if (!collisionDetected) {
+			//  check if collision with player
+			let calc = calc2points(player.bitmap.x, player.bitmap.y, 
+				cX + cannonBall.width / 2, 
+				cY + cannonBall.width / 2)
+
+			if (calc.distance < PLAYERDAMAGERADIUS) {
+				// destroy cannonball
+				cannonballsToDestroy.push(i)
+
+				playerDamaged()
+
+			}
+			
+		}
+	}
 
 	// destroy enemy cannonballs
+	numDestroy = cannonballsToDestroy.length - 1
+	for (let i = numDestroy; i >= 0 ; i-- ) {
+		let destroyIndex = cannonballsToDestroy[i]
 
-}
+		// stop cannonball render
+		stage.removeChild(cannonBall.activeEnemy[destroyIndex].bitmap)
 
-function cannonBallCollisionCheck() {
+		// remove from array
+		cannonBall.activeEnemy.splice(destroyIndex, 1)
+		cannonBall.numEnemy -= 1
+
+	}
+
 
 }
 
@@ -761,20 +826,15 @@ function handleTick(event) {
 			if (shootCooldownTimerPlayerL == 0) {
 				// fire cannon ball from port
 				shootCooldownTimerPlayerL = COOLDOWNTIMERPLAYER
-
 				fireCannonPort("player")
-
 			}
-			
 		}
 
 		if (shootRightHeld) {
 			if (shootCooldownTimerPlayerR == 0) {
 				// fire cannon ball from starboard
 				shootCooldownTimerPlayerR = COOLDOWNTIMERPLAYER
-
 				fireCannonStarboard("player")
-
 			}
 		}
 
@@ -784,6 +844,7 @@ function handleTick(event) {
 		// keep player in bounds
 		keepPlayerInBounds()
 		
+		// check player collision with islands
 		keepPlayerOffIslands()
 
 		// update enemy position
@@ -796,16 +857,11 @@ function handleTick(event) {
 			ghostShips[i].y = py
 		}
 
-		cannonBallUpdates()
-
 		// update cannonball rotation and posititions
-		cannonBallCollisionCheck()
-
+		cannonBallUpdates()
 
 		// check player collision with enemy
 		playerEnemyCollisionCheck()
-
-		
 
 	}
 
