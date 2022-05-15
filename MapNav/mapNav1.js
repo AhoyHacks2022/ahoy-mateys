@@ -692,8 +692,8 @@ function cannonBallUpdates() {
 			cannonBall.activePlayer[i].bitmap.x = cX
 			cannonBall.activePlayer[i].bitmap.y = cY
 
-			for (let i = 0; i < islandInfo.numIslands; i++) {
-				let calc = calc2points(islandInfo.islandCenters[i].x, islandInfo.islandCenters[i].y,
+			for (let j = 0; j < islandInfo.numIslands; j++) {
+				let calc = calc2points(islandInfo.islandCenters[j].x, islandInfo.islandCenters[j].y,
 					cX + cannonBall.width / 2, cY + cannonBall.width / 2)
 	
 				if (calc.distance < ISLANDCOLLISIONRADIUS) {
@@ -763,15 +763,15 @@ function cannonBallUpdates() {
 			cannonBall.activeEnemy[i].bitmap.y = cY
 
 			// check collision with island
-			for (let i = 0; i < islandInfo.numIslands; i++) {
-				let calc = calc2points(islandInfo.islandCenters[i].x, islandInfo.islandCenters[i].y,
+			for (let j = 0; j < islandInfo.numIslands; j++) {
+				let calc = calc2points(islandInfo.islandCenters[j].x, islandInfo.islandCenters[j].y,
 					cX + cannonBall.width / 2, cY + cannonBall.width / 2)
 	
 				if (calc.distance < ISLANDCOLLISIONRADIUS) {
 					// destroy cannonball
 					cannonballsToDestroy.push(i)
 	
-					console.log("you hit land genius :P")
+					console.log("enemy hit land")
 					collisionDetected = true
 
 				}
@@ -785,6 +785,9 @@ function cannonBallUpdates() {
 				cY + cannonBall.width / 2)
 
 			if (calc.distance < PLAYERDAMAGERADIUS) {
+
+				console.log("enemy hit player")
+
 				// destroy cannonball
 				cannonballsToDestroy.push(i)
 
@@ -797,22 +800,22 @@ function cannonBallUpdates() {
 
 	// destroy enemy cannonballs
 	numDestroy = cannonballsToDestroy.length - 1
-	console.log(cannonballsToDestroy)
-	console.log(cannonBall.activeEnemy)
-	for (let i = numDestroy; i >= 0 ; i-- ) {
-		let destroyIndex = cannonballsToDestroy[i]
 
-		// stop cannonball render
-		// if (cannonBall.activeEnemy[destroyIndex]) {
+	if (numDestroy > 0) {
+		for (let i = numDestroy; i >= 0 ; i-- ) {
+			let destroyIndex = cannonballsToDestroy[i]
+	
+			// stop cannonball render
 			stage.removeChild(cannonBall.activeEnemy[destroyIndex].bitmap)
-		// }
-		
-
-		// remove from array
-		cannonBall.activeEnemy.splice(destroyIndex, 1)
-		cannonBall.numEnemy -= 1
-
+			
+	
+			// remove from array
+			cannonBall.activeEnemy.splice(destroyIndex, 1)
+			cannonBall.numEnemy -= 1
+	
+		}
 	}
+
 
 
 }
